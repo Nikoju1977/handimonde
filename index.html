@@ -628,7 +628,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Tri", sortScore:"Score", sortDist:"Distance", goThere:"Y aller", score:"Score d'accès",
       chkToilets:"Toilettes PMR", chkTactile:"Bandes podotactiles", chkHearing:"Boucle magnétique", chkBraille:"Braille", close:"Fermer",
       minScore:"Score minimum", share:"Partager", copied:"Lien copié dans le presse-papier", sharePlace:"Partager ce lieu",
-      statPlaces:"lieux dans cette zone", statAvg:"score moyen",
+      statPlaces:"lieux dans cette zone", statAvg:"score moyen", filteredNone:"lieux ici, mais aucun ne correspond à tes filtres", resetFilters:"Réinitialiser les filtres",
       errNetDesc:"Les serveurs de données sont saturés ou momentanément indisponibles. Réessayez dans un instant.", retry:"Réessayer",
       ai:"IA", aiSummary:"Résumé accessibilité (IA)", aiGenerating:"Génération du résumé…", aiError:"IA indisponible (vérifiez la clé ou réessayez).",
       aiSettings:"Paramètres IA", aiProvider:"Fournisseur", aiKey:"Clé API", aiKeyPh:"Collez votre clé…", aiSave:"Enregistrer", aiClear:"Effacer la clé",
@@ -659,7 +659,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Sort", sortScore:"Score", sortDist:"Distance", goThere:"Directions", score:"Access score",
       chkToilets:"Accessible WC", chkTactile:"Tactile paving", chkHearing:"Hearing loop", chkBraille:"Braille", close:"Close",
       minScore:"Minimum score", share:"Share", copied:"Link copied to clipboard", sharePlace:"Share this place",
-      statPlaces:"places in this area", statAvg:"average score",
+      statPlaces:"places in this area", statAvg:"average score", filteredNone:"places here, but none match your filters", resetFilters:"Reset filters",
       errNetDesc:"The data servers are busy or momentarily unavailable. Try again shortly.", retry:"Retry",
       ai:"AI", aiSummary:"Accessibility summary (AI)", aiGenerating:"Generating summary…", aiError:"AI unavailable (check the key or retry).",
       aiSettings:"AI settings", aiProvider:"Provider", aiKey:"API key", aiKeyPh:"Paste your key…", aiSave:"Save", aiClear:"Clear key",
@@ -966,6 +966,15 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     el.hidden=false;
     el.innerHTML=vis.length+" "+esc(t("statPlaces"))+' <span class="star">\u2605</span> '+esc(t("statAvg"))+" "+avg+"/5";
   }
+  function resetFilters(){
+    filters={ levels:{yes:true,limited:true}, feats:{}, cats:{}, minScore:0 };
+    $all("#levelChips .chip").forEach(function(c){ c.setAttribute("aria-pressed","true"); });
+    $all("#featChips .chip").forEach(function(c){ c.setAttribute("aria-pressed","false"); });
+    $all("#catChips .chip").forEach(function(c){ c.setAttribute("aria-pressed","false"); });
+    var ms=$("#minScore"); if(ms){ ms.value=0; $("#minScoreVal").textContent="0 / 5"; ms.setAttribute("aria-valuetext","0 sur 5"); }
+    if(map && map.getZoom()>=13){ renderResults(); rebuildMarkers(); }
+    else { loadPlaces(); }
+  }
   function renderResults(){
     var res=$("#results"); var vis=visiblePlaces();
     if(map && map.getZoom()<13 && !catActive("fav")){
@@ -973,7 +982,18 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       setStatus("—", t("zoomMore"), false); updateStats(null); return;
     }
     setStatus(String(vis.length), t("results"), false);
-    if(!vis.length){ res.innerHTML=stateHTML("none","noneDesc"); updateStats(null); return; }
+    if(!vis.length){
+      if(places.length>0){
+        res.innerHTML='<div class="state">'+
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>'+
+          '<h3>'+places.length+' '+esc(t("filteredNone"))+'</h3>'+
+          '<button type="button" class="btn btn--accent" id="resetFiltersBtn" style="justify-content:center">'+esc(t("resetFilters"))+'</button></div>';
+        var rb=$("#resetFiltersBtn"); if(rb) rb.addEventListener("click",resetFilters);
+      } else {
+        res.innerHTML=stateHTML("none","noneDesc");
+      }
+      updateStats(null); return;
+    }
     updateStats(vis);
     if(sortMode==="dist" && userLoc){
       vis.sort(function(a,b){ return haversine(userLoc.lat,userLoc.lon,a.lat,a.lon)-haversine(userLoc.lat,userLoc.lon,b.lat,b.lon); });

@@ -1,3 +1,4 @@
+// © 2026 Studio Niko Design — Niko (Nicolas Julienne). Signature : Studio Niko Design · Août 2026.
 // HandiMonde — proxy LLM same-origin (Vercel Serverless, Node).
 // BYOK : la cle de l'utilisateur transite par sa propre fonction Vercel (HTTPS)
 // puis vers le fournisseur. Les API LLM bloquent les appels navigateur (CORS) ;

@@ -824,12 +824,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   function loadPlaces(){
     if(!map) return;
     if(catActive("fav")){ renderFavorites(); return; }
-    if(map.getZoom() < 13){
-      places=[]; renderResults(); rebuildMarkers();
-      setStatus("—", t("zoomMore"), false);
-      return;
-    }
-    var b=map.getBounds(), bbox=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(n){return n.toFixed(5);}).join(",");
+    var b=map.getBounds(), c=map.getCenter();
+    var south=b.getSouth(), west=b.getWest(), north=b.getNorth(), east=b.getEast();
+    var MAXLAT=0.09, MAXLON=0.13; // ~10-12 km : borne pour rester rapide a tout zoom
+    if(north-south > MAXLAT){ south=c.lat-MAXLAT/2; north=c.lat+MAXLAT/2; }
+    if(east-west > MAXLON){ west=c.lng-MAXLON/2; east=c.lng+MAXLON/2; }
+    var bbox=[south,west,north,east].map(function(n){return n.toFixed(5);}).join(",");
     var q="[out:json][timeout:25];nwr[\"wheelchair\"~\"^(yes|limited)$\"]("+bbox+");out center tags 500;";
     var seq= ++reqSeq;
     setStatus("", t("loading"), true);
@@ -977,10 +977,6 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   }
   function renderResults(){
     var res=$("#results"); var vis=visiblePlaces();
-    if(map && map.getZoom()<13 && !catActive("fav")){
-      res.innerHTML=stateHTML("zoomMore","zoomMoreDesc");
-      setStatus("—", t("zoomMore"), false); updateStats(null); return;
-    }
     setStatus(String(vis.length), t("results"), false);
     if(!vis.length){
       if(places.length>0){
@@ -1148,10 +1144,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     xhrJSON("GET",url,null,function(err,data){
       if(err || !data || !data.length){ setStatus("—", t("noPlace"), false); return; }
       var r=data[0];
-      if(r.boundingbox){
-        var bb=r.boundingbox.map(Number);
-        map.fitBounds([[bb[0],bb[2]],[bb[1],bb[3]]],{maxZoom:16,padding:[20,20]});
-      }else{ map.setView([Number(r.lat),Number(r.lon)],15); }
+      map.setView([Number(r.lat),Number(r.lon)], 15);
     });
   }
 

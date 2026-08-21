@@ -1,6 +1,5 @@
 // HandiMonde — proxy Overpass same-origin (Vercel Serverless, Node).
-// Le navigateur appelle /api/osm (aucun CORS), le serveur interroge les miroirs
-// avec les bons en-tetes et bascule automatiquement en cas d'echec.
+// GET /api/osm?selftest=1 lance une requete Nantes et renvoie le compte (diagnostic).
 
 const MIRRORS = [
   "https://overpass-api.de/api/interpreter",
@@ -8,6 +7,9 @@ const MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
   "https://api.openstreetmap.fr/oapi/interpreter"
 ];
+
+const SELFTEST_Q =
+  '[out:json][timeout:25];nwr["wheelchair"~"^(yes|limited)$"](47.20,-1.58,47.23,-1.54);out center tags 60;';
 
 async function readBody(req) {
   if (req.body !== undefined && req.body !== null) {
@@ -21,18 +23,8 @@ async function readBody(req) {
   });
 }
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") { res.status(204).end(); return; }
-  if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
-
-  let q = "";
-  try { const b = await readBody(req); q = (b && b.q) || ""; }
-  catch (e) { res.status(400).json({ error: "bad json" }); return; }
-  if (!q || q.length > 2000) { res.status(400).json({ error: "bad query" }); return; }
-
+async function queryMirrors(q) {
+  const attempts = [];
   for (const url of MIRRORS) {
     try {
       const ctrl = new AbortController();
@@ -48,14 +40,48 @@ export default async function handler(req, res) {
         signal: ctrl.signal
       });
       clearTimeout(to);
-      if (!r.ok) continue;
+      if (!r.ok) { attempts.push(url + " -> HTTP " + r.status); continue; }
       const text = await r.text();
-      let data; try { data = JSON.parse(text); } catch (e) { continue; }
-      if (!data || !Array.isArray(data.elements)) continue;
-      res.setHeader("Cache-Control", "public, s-maxage=120, stale-while-revalidate=300");
-      res.status(200).json(data);
-      return;
-    } catch (e) { /* miroir suivant */ }
+      let data; try { data = JSON.parse(text); } catch (e) { attempts.push(url + " -> bad JSON"); continue; }
+      if (!data || !Array.isArray(data.elements)) { attempts.push(url + " -> no elements"); continue; }
+      return { ok: true, mirror: url, data, attempts };
+    } catch (e) {
+      attempts.push(url + " -> " + (e && e.name === "AbortError" ? "timeout" : "error"));
+    }
   }
-  res.status(502).json({ error: "all overpass mirrors failed" });
+  return { ok: false, attempts };
+}
+
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") { res.status(204).end(); return; }
+
+  if (req.method === "GET" && req.query && req.query.selftest) {
+    const out = await queryMirrors(SELFTEST_Q);
+    if (out.ok) {
+      res.status(200).json({ ok: true, mirror: out.mirror, count: out.data.elements.length, attempts: out.attempts });
+    } else {
+      res.status(502).json({ ok: false, count: 0, attempts: out.attempts });
+    }
+    return;
+  }
+
+  if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
+
+  let q = "";
+  try { const b = await readBody(req); q = (b && b.q) || ""; }
+  catch (e) { res.status(400).json({ error: "bad json" }); return; }
+  if (!q || q.length > 2000) { res.status(400).json({ error: "bad query" }); return; }
+
+  const out = await queryMirrors(q);
+  if (out.ok) {
+    console.log("[osm] OK " + out.mirror + " n=" + out.data.elements.length);
+    res.setHeader("Cache-Control", "public, s-maxage=120, stale-while-revalidate=300");
+    res.status(200).json(out.data);
+  } else {
+    console.log("[osm] FAIL " + JSON.stringify(out.attempts));
+    res.status(502).json({ error: "all overpass mirrors failed", attempts: out.attempts });
+  }
 }

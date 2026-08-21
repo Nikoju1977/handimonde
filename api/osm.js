@@ -1,16 +1,17 @@
 // HandiMonde — proxy Overpass same-origin (Vercel Serverless, Node).
-// 5 backends distincts (4 continents) + double passe. Les instances publiques
-// Overpass saturent souvent (2026) ; la redondance evite l'ecran vide.
-// Diagnostic : GET /api/osm?selftest=1 renvoie le compte + le detail des tentatives.
+// Backends MONDIAUX uniquement (les extraits regionaux type osm.ch/osm.jp
+// renvoient une liste vide hors de leur pays et faussaient le resultat).
+// Un resultat vide est traite comme un echec tant qu'un autre miroir peut
+// fournir des donnees ; on ne renvoie 0 que si TOUS sont vides.
+// Diagnostic : GET /api/osm?selftest=1.
 
 export const maxDuration = 60;
 
 const MIRRORS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
-  "https://overpass.osm.ch/api/interpreter",
-  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
-  "https://overpass.osm.jp/api/interpreter"
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 ];
 
 const SELFTEST_Q =
@@ -58,12 +59,21 @@ async function hit(url, q, attempts) {
 
 async function queryMirrors(q) {
   const attempts = [];
+  let emptyFallback = null; // resultat vide valide, garde en dernier recours
   for (let pass = 0; pass < 2; pass++) {
     for (const url of MIRRORS) {
       const ok = await hit(url, q, attempts);
-      if (ok) return { ok: true, mirror: ok.mirror, data: ok.data, attempts };
+      if (!ok) continue;
+      if (ok.data.elements.length > 0) {
+        return { ok: true, mirror: ok.mirror, data: ok.data, attempts };
+      }
+      attempts.push(url + " -> empty(0), on continue");
+      if (!emptyFallback) emptyFallback = ok;
     }
-    if (pass === 0) await sleep(1200);
+    if (pass === 0) await sleep(1000);
+  }
+  if (emptyFallback) {
+    return { ok: true, mirror: emptyFallback.mirror, data: emptyFallback.data, attempts, empty: true };
   }
   return { ok: false, attempts };
 }
@@ -77,7 +87,7 @@ export default async function handler(req, res) {
   if (req.method === "GET" && req.query && req.query.selftest) {
     const out = await queryMirrors(SELFTEST_Q);
     res.status(out.ok ? 200 : 502).json(
-      out.ok ? { ok: true, mirror: out.mirror, count: out.data.elements.length, attempts: out.attempts }
+      out.ok ? { ok: true, mirror: out.mirror, count: out.data.elements.length, empty: !!out.empty, attempts: out.attempts }
              : { ok: false, count: 0, attempts: out.attempts });
     return;
   }
@@ -91,7 +101,7 @@ export default async function handler(req, res) {
 
   const out = await queryMirrors(q);
   if (out.ok) {
-    console.log("[osm] OK " + out.mirror + " n=" + out.data.elements.length);
+    console.log("[osm] OK " + out.mirror + " n=" + out.data.elements.length + (out.empty ? " (all empty)" : ""));
     res.setHeader("Cache-Control", "public, s-maxage=180, stale-while-revalidate=600");
     res.status(200).json(out.data);
   } else {

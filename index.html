@@ -846,13 +846,23 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     x.setRequestHeader("Content-Type","application/json");
     x.onreadystatechange=function(){
       if(x.readyState!==4) return;
+      if(seq!==reqSeq) return;
       if(x.status>=200 && x.status<300){
-        try{ var d=JSON.parse(x.responseText); if(d && d.elements){ if(seq!==reqSeq) return; ingest(d.elements); renderResults(); rebuildMarkers(); return; } }catch(e){}
+        var d=null;
+        try{ d=JSON.parse(x.responseText); }catch(e){ d=null; }
+        if(d && d.elements){
+          try{
+            ingest(d.elements); renderResults(); rebuildMarkers();
+          }catch(err){
+            setStatus("!", "Rendu: "+((err&&err.message)||err), false);
+          }
+          return;
+        }
       }
       tryOverpass(0,q,seq,0);
     };
-    x.ontimeout=function(){ tryOverpass(0,q,seq,0); };
-    x.onerror=function(){ tryOverpass(0,q,seq,0); };
+    x.ontimeout=function(){ if(seq===reqSeq) tryOverpass(0,q,seq,0); };
+    x.onerror=function(){ if(seq===reqSeq) tryOverpass(0,q,seq,0); };
     x.send(JSON.stringify({q:q}));
   }
   function tryOverpass(i,q,seq,attempt){

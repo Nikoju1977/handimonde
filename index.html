@@ -850,7 +850,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
           beacon("recv n="+d.elements.length);
           try{
             ingest(d.elements); renderResults(); rebuildMarkers();
-            beacon("rendered places="+places.length+" vis="+visiblePlaces().length+" zoom="+(map&&map.getZoom())+" clusterType="+(cluster&&cluster.constructor&&cluster.constructor.name));
+            beacon("rendered places="+places.length+" vis="+visiblePlaces().length+" zoom="+(map&&map.getZoom())+" view="+document.body.getAttribute("data-view")+" mobile="+window.matchMedia("(max-width:820px)").matches+" mapH="+((document.getElementById("map")||{}).clientHeight)+" ovPane="+document.querySelectorAll(".leaflet-overlay-pane *").length+" mkPane="+document.querySelectorAll(".leaflet-marker-pane *").length+" cards="+document.querySelectorAll("#results .card").length+" cats="+JSON.stringify(filters.cats));
           }catch(err){
             beacon("RENDER_ERR "+((err&&err.message)||err)+" @ "+((err&&err.stack)||"").replace(/\n/g," ").slice(0,260));
             setStatus("!", "Rendu: "+((err&&err.message)||err), false);
@@ -1402,6 +1402,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   /* ============ restore prefs then start ============ */
   function boot(){
     bind(); initMap();
+    if(window.matchMedia("(max-width:820px)").matches){ setView("list"); }
     var hp=parseHash();
     if(hp){
       pendingShare=hp;

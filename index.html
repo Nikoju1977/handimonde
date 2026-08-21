@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Trouvez partout dans le monde des lieux accessibles et handi-inclusifs : accès fauteuil, toilettes PMR, bandes podotactiles, boucle magnétique, braille. Données ouvertes OpenStreetMap.">
+<title>HandiMonde — Trouver les lieux accessibles, partout</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+
+<style>
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --fs-root: 100%;
+
+  --ink:        #0B1F2A;
+  --ink-soft:   #3C525E;
+  --surface:    #FFFFFF;
+  --panel:      #EEF3F4;
+  --panel-2:    #E1EAEC;
+  --line:       #CBD8DB;
+
+  --brand:      #1B7A8C;
+  --brand-strong:#0E5563;
+  --accent:     #FF5A38;
+  --accent-ink: #FFFFFF;
+
+  --yes:        #16813A;
+  --yes-bg:     #DBF3E2;
+  --limited:    #A85C00;
+  --limited-bg: #FBEAD1;
+  --no:         #B3261E;
+
+  --focus:      #103B47;
+  --shadow:     0 6px 24px rgba(11,31,42,.12);
+  --radius:     16px;
+  --radius-sm:  10px;
+
+  --dur: .28s;
+}
+[data-theme="dark"]{
+  --ink:#EAF2F4; --ink-soft:#A9C0C7; --surface:#0A1620; --panel:#10222C; --panel-2:#16303B;
+  --line:#274451; --brand:#3FB4C9; --brand-strong:#7FD6E5; --accent:#FF7A5C; --accent-ink:#1A0A06;
+  --yes:#4FD37E; --yes-bg:#0E3320; --limited:#F2B25A; --limited-bg:#3A2A0E; --no:#FF6B60;
+  --focus:#9FE7F4; --shadow:0 8px 30px rgba(0,0,0,.5);
+}
+[data-theme="hc"]{
+  --ink:#FFFFFF; --ink-soft:#FFFFFF; --surface:#000000; --panel:#000000; --panel-2:#0A0A0A;
+  --line:#FFFFFF; --brand:#FFE500; --brand-strong:#FFE500; --accent:#FFE500; --accent-ink:#000000;
+  --yes:#33FF66; --yes-bg:#000000; --limited:#FFD400; --limited-bg:#000000; --no:#FF5C5C;
+  --focus:#FFE500; --shadow:none;
+}
+
+*{box-sizing:border-box}
+html{font-size:var(--fs-root)}
+body{
+  margin:0; background:var(--surface); color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,sans-serif;
+  font-size:1.05rem; line-height:1.5; letter-spacing:.005em;
+  -webkit-text-size-adjust:100%;
+}
+h1,h2,h3{font-family:"Lexend",system-ui,sans-serif; line-height:1.15; margin:0}
+button{font-family:inherit}
+a{color:var(--brand-strong)}
+
+/* ============ ACCESSIBILITY PRIMITIVES ============ */
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px; border-radius:6px}
+[data-theme="hc"] :focus-visible{outline-width:4px}
+.skip{
+  position:absolute; left:12px; top:-80px; z-index:2000;
+  background:var(--accent); color:var(--accent-ink); padding:12px 18px;
+  border-radius:10px; font-weight:700; text-decoration:none; transition:top var(--dur);
+}
+.skip:focus{top:12px}
+.sr-only{
+  position:absolute!important; width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+
+/* ============ APP SHELL ============ */
+.app{display:flex; flex-direction:column; height:100vh; height:100dvh}
+
+.topbar{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:10px 16px; background:var(--surface); border-bottom:2px solid var(--line);
+  position:relative; z-index:1000;
+}
+.brand{display:flex; align-items:center; gap:12px; margin-right:auto}
+.brand__mark{
+  width:44px;height:44px;border-radius:13px; flex:0 0 auto;
+  background:linear-gradient(135deg,var(--brand),var(--brand-strong));
+  display:grid; place-items:center; color:#fff; box-shadow:var(--shadow);
+}
+[data-theme="hc"] .brand__mark{background:var(--accent); color:var(--accent-ink); border:2px solid #fff}
+.brand__mark svg{width:26px;height:26px}
+.brand__name{font-size:1.55rem; font-weight:700; letter-spacing:.01em}
+.brand__name b{color:var(--brand-strong)}
+.brand__tag{
+  font-family:"JetBrains Mono",monospace; font-size:.62rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--ink-soft); margin-top:1px;
+}
+
+.toolbar{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.tgroup{display:flex; align-items:center; gap:4px; background:var(--panel); padding:4px; border-radius:12px; border:1px solid var(--line)}
+.tgroup__lab{
+  font-family:"JetBrains Mono",monospace; font-size:.58rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-soft); padding:0 6px 0 4px;
+}
+.iconbtn{
+  min-width:40px; height:40px; padding:0 10px; border:0; border-radius:9px;
+  background:transparent; color:var(--ink); font-weight:700; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  transition:background var(--dur), color var(--dur), transform var(--dur);
+}
+.iconbtn:hover{background:var(--panel-2)}
+.iconbtn[aria-pressed="true"]{background:var(--brand); color:#fff}
+[data-theme="hc"] .iconbtn[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+.iconbtn svg{width:20px;height:20px}
+.iconbtn:active{transform:scale(.94)}
+
+/* ============ LAYOUT ============ */
+.stage{display:flex; flex:1; min-height:0}
+.panel{
+  width:min(430px,42vw); flex:0 0 auto; background:var(--panel);
+  border-right:2px solid var(--line); display:flex; flex-direction:column; min-height:0;
+}
+.mapwrap{flex:1; position:relative; min-width:0}
+#map{position:absolute; inset:0; background:var(--panel-2)}
+.leaflet-container{font-family:"Atkinson Hyperlegible",sans-serif}
+
+/* search + geoloc */
+.controls{padding:14px 14px 10px; display:flex; flex-direction:column; gap:10px; border-bottom:2px solid var(--line)}
+.searchrow{display:flex; gap:8px}
+.field{position:relative; flex:1}
+.field svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); width:20px;height:20px; color:var(--ink-soft); pointer-events:none}
+.field input{
+  width:100%; height:48px; padding:0 14px 0 42px; font-size:1rem; font-family:inherit;
+  border:2px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink);
+}
+.field input::placeholder{color:var(--ink-soft)}
+.btn{
+  border:0; border-radius:12px; cursor:pointer; font-weight:700; font-family:inherit; font-size:1rem;
+  padding:0 16px; height:48px; display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
+  transition:transform var(--dur), filter var(--dur);
+}
+.btn:active{transform:scale(.97)}
+.btn--accent{background:var(--accent); color:var(--accent-ink)}
+.btn--brand{background:var(--brand); color:#fff}
+.btn--ghost{background:var(--surface); color:var(--ink); border:2px solid var(--line)}
+.btn:hover{filter:brightness(1.05)}
+.btn svg{width:20px;height:20px}
+
+/* filters */
+.filters{display:flex; flex-direction:column; gap:10px}
+fieldset{border:0; margin:0; padding:0}
+legend{
+  font-family:"JetBrains Mono",monospace; font-size:.6rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; padding:0;
+}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{
+  border:2px solid var(--line); background:var(--surface); color:var(--ink);
+  border-radius:999px; padding:7px 12px; font-size:.86rem; font-weight:700; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px; transition:background var(--dur),border-color var(--dur),color var(--dur);
+}
+.chip[aria-pressed="true"]{background:var(--brand); border-color:var(--brand); color:#fff}
+[data-theme="hc"] .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.chip .dot{width:10px;height:10px;border-radius:50%}
+.chip .dot--yes{background:var(--yes)} .chip .dot--limited{background:var(--limited)}
+
+/* status bar */
+.statusbar{
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+  border-bottom:2px solid var(--line); background:var(--panel);
+  font-family:"JetBrains Mono",monospace; font-size:.72rem; letter-spacing:.04em; color:var(--ink-soft);
+}
+.statusbar .count{color:var(--ink); font-weight:700; font-size:.9rem}
+.spinner{width:16px;height:16px;border:3px solid var(--line); border-top-color:var(--brand); border-radius:50%}
+@media (prefers-reduced-motion:no-preference){ .spinner{animation:spin .8s linear infinite} }
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* results */
+.results{flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; -webkit-overflow-scrolling:touch}
+.card{
+  text-align:left; width:100%; border:2px solid var(--line); background:var(--surface); color:var(--ink);
+  border-radius:var(--radius); padding:14px; cursor:pointer; display:grid;
+  grid-template-columns:auto 1fr; gap:12px; transition:border-color var(--dur), transform var(--dur), box-shadow var(--dur);
+}
+.card:hover{border-color:var(--brand); box-shadow:var(--shadow)}
+.card:active{transform:scale(.99)}
+.card.is-active{border-color:var(--accent); box-shadow:var(--shadow)}
+.ring{
+  width:46px;height:46px;border-radius:50%; flex:0 0 auto; display:grid; place-items:center;
+  font-family:"Lexend",sans-serif; font-weight:700; font-size:1.25rem; color:#fff;
+}
+.ring--yes{background:var(--yes)} .ring--limited{background:var(--limited)}
+[data-theme="hc"] .ring{color:#000; border:2px solid #fff}
+.card__body{min-width:0}
+.card__name{font-size:1.08rem; font-weight:700; font-family:"Lexend",sans-serif; overflow-wrap:anywhere}
+.card__meta{color:var(--ink-soft); font-size:.85rem; margin-top:1px}
+.badges{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
+.badge{
+  display:inline-flex; align-items:center; gap:5px; font-size:.74rem; font-weight:700;
+  padding:4px 8px; border-radius:8px; background:var(--panel-2); color:var(--ink); border:1px solid var(--line);
+}
+.badge svg{width:14px;height:14px}
+.badge--yes{background:var(--yes-bg); color:var(--yes); border-color:var(--yes)}
+.badge--limited{background:var(--limited-bg); color:var(--limited); border-color:var(--limited)}
+.card__fav{
+  grid-column:1/-1; justify-self:end; margin-top:-4px;
+}
+.favbtn{
+  border:2px solid var(--line); background:var(--surface); color:var(--ink-soft);
+  border-radius:9px; height:34px; padding:0 10px; font-size:.78rem; font-weight:700; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.favbtn[aria-pressed="true"]{color:var(--accent); border-color:var(--accent)}
+.favbtn svg{width:16px;height:16px}
+
+/* empty / hint states */
+.state{padding:30px 18px; text-align:center; color:var(--ink-soft); display:flex; flex-direction:column; align-items:center; gap:12px}
+.state svg{width:56px;height:56px; color:var(--brand); opacity:.9}
+.state h3{color:var(--ink); font-size:1.15rem}
+.state p{margin:0; max-width:32ch}
+
+/* legend on map */
+.legend{
+  position:absolute; left:12px; bottom:12px; z-index:600;
+  background:var(--surface); border:2px solid var(--line); border-radius:14px;
+  padding:10px 12px; box-shadow:var(--shadow); max-width:230px;
+}
+.legend h4{font-size:.72rem; font-family:"JetBrains Mono",monospace; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 8px}
+.legend ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px}
+.legend li{display:flex; align-items:center; gap:9px; font-size:.82rem}
+.legend .pin{width:20px;height:20px;border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid #fff}
+[data-theme="dark"] .legend .pin,[data-theme="hc"] .legend .pin{border-color:#000}
+.legend .pin--yes{background:var(--yes)} .legend .pin--limited{background:var(--limited)}
+
+/* map marker (divIcon) */
+.mk{position:relative; width:30px;height:30px}
+.mk__pin{
+  width:26px;height:26px;border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+  border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.4); display:grid; place-items:center;
+}
+[data-theme="dark"] .mk__pin,[data-theme="hc"] .mk__pin{border-color:#0A1620}
+.mk__pin svg{transform:rotate(45deg); width:14px;height:14px; color:#fff}
+.mk--yes .mk__pin{background:var(--yes)} .mk--limited .mk__pin{background:var(--limited)}
+.mk__n{transform:rotate(45deg); font-family:"JetBrains Mono",monospace; font-weight:700; font-size:13px; color:#fff; line-height:1}
+[data-theme="hc"] .mk__n{color:#000}
+
+/* sort control in statusbar */
+.statusbar{gap:8px}
+.sortctl{margin-left:auto; display:flex; gap:2px; background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:2px}
+.sortbtn{
+  border:0; background:transparent; color:var(--ink-soft); font-family:"JetBrains Mono",monospace;
+  font-size:.64rem; letter-spacing:.06em; text-transform:uppercase; font-weight:700; cursor:pointer;
+  padding:5px 8px; border-radius:7px;
+}
+.sortbtn[aria-pressed="true"]{background:var(--brand); color:#fff}
+[data-theme="hc"] .sortbtn[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+.sortbtn[hidden]{display:none}
+.statsbar{
+  padding:8px 14px; border-bottom:2px solid var(--line); background:var(--surface);
+  font-family:"JetBrains Mono",monospace; font-size:.72rem; letter-spacing:.03em;
+  color:var(--brand-strong); font-weight:700; display:flex; align-items:center; gap:8px;
+}
+.statsbar[hidden]{display:none}
+.statsbar .star{color:var(--limited)}
+
+/* card directions + distance */
+.card__dist{font-family:"JetBrains Mono",monospace; font-weight:700; color:var(--brand-strong)}
+.card__fav{display:flex; align-items:center; gap:8px}
+.golink{
+  text-decoration:none; border:2px solid var(--line); background:var(--surface); color:var(--brand-strong);
+  border-radius:9px; height:34px; padding:0 10px; font-size:.78rem; font-weight:700;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.golink:hover{border-color:var(--brand)}
+.golink svg{width:16px;height:16px}
+.actbtn{
+  border:2px solid var(--line); background:var(--surface); color:var(--ink-soft);
+  border-radius:9px; height:34px; width:40px; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.actbtn:hover{border-color:var(--brand); color:var(--brand-strong)}
+.actbtn svg{width:17px;height:17px}
+input[type="range"]{
+  width:100%; height:30px; accent-color:var(--brand); background:transparent; cursor:pointer;
+}
+input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset:4px}
+[data-theme="hc"] input[type="range"]{accent-color:var(--accent)}
+.pop__actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+
+/* contribute banner over map */
+.addbanner{
+  position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:650;
+  background:var(--accent); color:var(--accent-ink); border-radius:12px; padding:10px 16px;
+  font-weight:700; box-shadow:var(--shadow); display:flex; align-items:center; gap:10px; max-width:90%;
+}
+.addbanner[hidden]{display:none}
+.mapwrap.is-adding{cursor:crosshair}
+
+/* modal */
+.modal{
+  position:fixed; inset:0; z-index:3000; display:grid; place-items:center;
+  background:rgba(6,18,25,.55); padding:16px;
+}
+.modal[hidden]{display:none}
+.modal__box{
+  background:var(--surface); color:var(--ink); border:2px solid var(--line); border-radius:20px;
+  width:min(480px,100%); max-height:90vh; overflow-y:auto; box-shadow:var(--shadow); padding:20px;
+}
+.modal__head{display:flex; align-items:flex-start; gap:12px; margin-bottom:6px}
+.modal__head h2{font-size:1.3rem; flex:1}
+.modal__hint{color:var(--ink-soft); font-size:.9rem; margin:0 0 16px}
+.modal__x{
+  border:2px solid var(--line); background:var(--surface); color:var(--ink); width:38px;height:38px;
+  border-radius:10px; cursor:pointer; display:grid; place-items:center; flex:0 0 auto;
+}
+.modal__x svg{width:18px;height:18px}
+.flabel{
+  display:block; font-family:"JetBrains Mono",monospace; font-size:.62rem; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-soft); margin:14px 0 6px;
+}
+.finput,.ftext{
+  width:100%; font-family:inherit; font-size:1rem; color:var(--ink); background:var(--surface);
+  border:2px solid var(--line); border-radius:12px; padding:11px 12px;
+}
+.ftext{min-height:74px; resize:vertical}
+.radios{display:flex; flex-direction:column; gap:8px}
+.radio{
+  display:flex; align-items:center; gap:10px; border:2px solid var(--line); border-radius:12px;
+  padding:11px 12px; cursor:pointer; font-weight:700;
+}
+.radio input{width:20px;height:20px; accent-color:var(--brand)}
+.radio:has(input:checked){border-color:var(--brand); background:var(--panel)}
+.checks{display:flex; flex-wrap:wrap; gap:8px}
+.check{
+  display:inline-flex; align-items:center; gap:8px; border:2px solid var(--line); border-radius:10px;
+  padding:9px 11px; cursor:pointer; font-weight:700; font-size:.9rem;
+}
+.check input{width:18px;height:18px; accent-color:var(--brand)}
+.check:has(input:checked){border-color:var(--brand); background:var(--panel)}
+.modal__foot{display:flex; gap:10px; margin-top:20px}
+.modal__foot .btn{flex:1; justify-content:center}
+
+.leaflet-popup-content{margin:12px 14px; font-family:"Atkinson Hyperlegible",sans-serif}
+.pop__name{font-family:"Lexend",sans-serif; font-weight:700; font-size:1.05rem; margin:0 0 4px; color:#0B1F2A}
+.pop__meta{color:#3C525E; font-size:.85rem; margin:0 0 8px}
+.pop__badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.pop__badge{font-size:.72rem;font-weight:700;padding:3px 7px;border-radius:7px;background:#EEF3F4;color:#0B1F2A;border:1px solid #CBD8DB}
+.pop__link{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#0E5563;text-decoration:none;font-size:.85rem}
+.pop__link svg{width:15px;height:15px}
+
+/* mobile toggle */
+.viewtoggle{display:none}
+@media (max-width:820px){
+  .brand__tag{display:none}
+  .stage{position:relative}
+  .panel{position:absolute; inset:0; width:100%; border-right:0; z-index:5}
+  .mapwrap{position:absolute; inset:0}
+  body[data-view="map"] .panel{display:none}
+  body[data-view="list"] .mapwrap{visibility:hidden}
+  .viewtoggle{
+    display:inline-flex; position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+    z-index:900; background:var(--ink); color:var(--surface); border-radius:999px; padding:4px;
+    box-shadow:var(--shadow); gap:2px;
+  }
+  [data-theme="hc"] .viewtoggle{background:#000;border:2px solid #fff}
+  .viewtoggle .iconbtn{color:var(--surface); height:44px}
+  .viewtoggle .iconbtn[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+}
+@media (max-width:520px){
+  .brand__name{font-size:1.25rem}
+  .tgroup__lab{display:none}
+  .topbar{padding:8px 10px; gap:8px}
+}
+</style>
+</head>
+<body data-theme="light" data-view="map">
+
+<a class="skip" href="#results" data-i18n="skip">Aller aux résultats</a>
+
+<div class="app">
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <!-- accessibility symbol, custom -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="4" r="1.6" fill="currentColor" stroke="none"/>
+          <path d="M6 8h12"/><path d="M12 8v6"/><path d="M12 14l3 6"/><path d="M12 14l-3 6"/>
+        </svg>
+      </span>
+      <div>
+        <h1 class="brand__name">Handi<b>Monde</b></h1>
+        <div class="brand__tag" data-i18n="tagline">Lieux accessibles · données ouvertes</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="tgroup" role="group" aria-label="Taille du texte">
+        <span class="tgroup__lab" aria-hidden="true">Texte</span>
+        <button class="iconbtn" id="fsDown" aria-label="Réduire la taille du texte">A−</button>
+        <button class="iconbtn" id="fsUp" aria-label="Agrandir la taille du texte" style="font-size:1.15rem">A+</button>
+      </div>
+
+      <div class="tgroup" role="group" aria-label="Thème d'affichage">
+        <span class="tgroup__lab" aria-hidden="true">Thème</span>
+        <button class="iconbtn" data-theme-btn="light" aria-pressed="true" aria-label="Thème clair" title="Clair">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="iconbtn" data-theme-btn="dark" aria-pressed="false" aria-label="Thème sombre" title="Sombre">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+        </button>
+        <button class="iconbtn" data-theme-btn="hc" aria-pressed="false" aria-label="Contraste élevé" title="Contraste élevé">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg>
+        </button>
+      </div>
+
+      <button class="iconbtn" id="langBtn" aria-label="Changer de langue (FR / EN)" title="FR / EN"
+        style="border:1px solid var(--line);background:var(--panel);min-width:52px;font-family:'JetBrains Mono',monospace">FR</button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <aside class="panel" aria-label="Recherche et résultats">
+      <div class="controls">
+        <form class="searchrow" id="searchForm" role="search" aria-label="Rechercher un lieu ou une ville">
+          <div class="field">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="searchInput" type="search" autocomplete="off"
+              placeholder="Ville, adresse, quartier…" aria-label="Rechercher une ville ou une adresse" data-i18n-ph="searchPh">
+          </div>
+          <button class="btn btn--brand" type="submit" data-i18n="go">Aller</button>
+        </form>
+        <button class="btn btn--accent" id="geoBtn" type="button" style="justify-content:center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>
+          <span data-i18n="nearme">Autour de moi</span>
+        </button>
+        <button class="btn btn--ghost" id="addBtn" type="button" aria-pressed="false" style="justify-content:center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span data-i18n="contribute">Contribuer</span>
+        </button>
+
+        <div class="filters">
+          <fieldset>
+            <legend data-i18n="accessLevel">Niveau d'accès</legend>
+            <div class="chips" id="levelChips">
+              <button type="button" class="chip" data-level="yes" aria-pressed="true"><span class="dot dot--yes"></span><span data-i18n="lvlYes">Accessible</span></button>
+              <button type="button" class="chip" data-level="limited" aria-pressed="true"><span class="dot dot--limited"></span><span data-i18n="lvlLimited">Partiel</span></button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend data-i18n="features">Équipements</legend>
+            <div class="chips" id="featChips">
+              <button type="button" class="chip" data-feat="toilets" aria-pressed="false" data-i18n="fToilets">Toilettes PMR</button>
+              <button type="button" class="chip" data-feat="tactile" aria-pressed="false" data-i18n="fTactile">Podotactile</button>
+              <button type="button" class="chip" data-feat="hearing" aria-pressed="false" data-i18n="fHearing">Boucle magnétique</button>
+              <button type="button" class="chip" data-feat="braille" aria-pressed="false" data-i18n="fBraille">Braille</button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend><span data-i18n="minScore">Score minimum</span> : <span id="minScoreVal" style="color:var(--brand-strong)">0 / 5</span></legend>
+            <input type="range" id="minScore" min="0" max="5" step="1" value="0" aria-label="Score minimum d'accessibilité" aria-valuetext="0 sur 5">
+          </fieldset>
+          <fieldset>
+            <legend data-i18n="category">Type de lieu</legend>
+            <div class="chips" id="catChips">
+              <button type="button" class="chip" data-cat="food" aria-pressed="false" data-i18n="cFood">Restauration</button>
+              <button type="button" class="chip" data-cat="toilets" aria-pressed="false" data-i18n="cToilets">Toilettes</button>
+              <button type="button" class="chip" data-cat="transport" aria-pressed="false" data-i18n="cTransport">Transport</button>
+              <button type="button" class="chip" data-cat="shop" aria-pressed="false" data-i18n="cShop">Commerces</button>
+              <button type="button" class="chip" data-cat="culture" aria-pressed="false" data-i18n="cCulture">Culture</button>
+              <button type="button" class="chip" data-cat="health" aria-pressed="false" data-i18n="cHealth">Santé</button>
+              <button type="button" class="chip" data-cat="lodging" aria-pressed="false" data-i18n="cLodging">Hébergement</button>
+              <button type="button" class="chip" data-cat="fav" aria-pressed="false" data-i18n="cFav">★ Favoris</button>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="statusbar" role="status" aria-live="polite" id="statusbar">
+        <span class="count" id="count">—</span>
+        <span id="statusMsg" data-i18n="hintZoom">Déplacez la carte pour explorer</span>
+        <span class="sortctl" role="group" aria-label="Trier les résultats">
+          <button type="button" class="sortbtn" id="sortScore" data-sort="score" aria-pressed="true" data-i18n="sortScore">Score</button>
+          <button type="button" class="sortbtn" id="sortDist" data-sort="dist" aria-pressed="false" data-i18n="sortDist" hidden>Distance</button>
+        </span>
+      </div>
+
+      <div class="statsbar" id="statsbar" role="status" aria-live="polite" hidden></div>
+      <div class="results" id="results" tabindex="-1"></div>
+    </aside>
+
+    <div class="mapwrap">
+      <div id="map" role="application" aria-label="Carte des lieux accessibles"></div>
+      <div class="addbanner" id="addBanner" role="status" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/><circle cx="12" cy="11" r="2"/></svg>
+        <span id="addBannerMsg" data-i18n="addModeOn">Mode contribution : touchez la carte</span>
+      </div>
+      <div class="legend" aria-hidden="true">
+        <h4 data-i18n="legend">Légende</h4>
+        <ul>
+          <li><span class="pin pin--yes"></span> <span data-i18n="lvlYes">Accessible</span></li>
+          <li><span class="pin pin--limited"></span> <span data-i18n="lvlLimited">Partiel</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal__box" id="modalBox">
+      <div class="modal__head">
+        <h2 id="modalTitle" data-i18n="addTitle">Signaler un lieu accessible</h2>
+        <button class="modal__x" id="modalClose" type="button" aria-label="Fermer" data-i18n-al="close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <p class="modal__hint" data-i18n="addHint">Touchez la carte à l'emplacement du lieu, puis décrivez-le</p>
+      <form id="addForm">
+        <label class="flabel" for="addName" data-i18n="addName">Nom du lieu (optionnel)</label>
+        <input class="finput" id="addName" type="text" maxlength="80" autocomplete="off">
+
+        <span class="flabel" data-i18n="addStatus">Accès fauteuil roulant</span>
+        <div class="radios" role="radiogroup" aria-label="Niveau d'accès">
+          <label class="radio"><input type="radio" name="acc" value="yes" checked><span data-i18n="optYes">Oui, accessible</span></label>
+          <label class="radio"><input type="radio" name="acc" value="limited"><span data-i18n="optLimited">Partiellement</span></label>
+          <label class="radio"><input type="radio" name="acc" value="no"><span data-i18n="optNo">Non accessible</span></label>
+        </div>
+
+        <span class="flabel" data-i18n="addFeats">Équipements présents</span>
+        <div class="checks">
+          <label class="check"><input type="checkbox" name="f_toilets"><span data-i18n="chkToilets">Toilettes PMR</span></label>
+          <label class="check"><input type="checkbox" name="f_tactile"><span data-i18n="chkTactile">Bandes podotactiles</span></label>
+          <label class="check"><input type="checkbox" name="f_hearing"><span data-i18n="chkHearing">Boucle magnétique</span></label>
+          <label class="check"><input type="checkbox" name="f_braille"><span data-i18n="chkBraille">Braille</span></label>
+        </div>
+
+        <label class="flabel" for="addComment" data-i18n="addComment">Précisions (optionnel)</label>
+        <textarea class="ftext" id="addComment" maxlength="400"></textarea>
+
+        <div class="modal__foot">
+          <button class="btn btn--ghost" type="button" id="modalCancel" data-i18n="cancel">Annuler</button>
+          <button class="btn btn--accent" type="submit" id="addSend" data-i18n="send">Envoyer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <nav class="viewtoggle" aria-label="Basculer carte / liste">
+    <button class="iconbtn" id="viewMap" aria-pressed="true" data-i18n="vMap">Carte</button>
+    <button class="iconbtn" id="viewList" aria-pressed="false" data-i18n="vList">Liste</button>
+  </nav>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+"use strict";
+(function(){
+
+  /* ============ i18n ============ */
+  var I18N = {
+    fr:{
+      skip:"Aller aux résultats", tagline:"Lieux accessibles · données ouvertes",
+      searchPh:"Ville, adresse, quartier…", go:"Aller", nearme:"Autour de moi",
+      accessLevel:"Niveau d'accès", lvlYes:"Accessible", lvlLimited:"Partiel",
+      features:"Équipements", fToilets:"Toilettes PMR", fTactile:"Podotactile", fHearing:"Boucle magnétique", fBraille:"Braille",
+      category:"Type de lieu", cFood:"Restauration", cToilets:"Toilettes", cTransport:"Transport", cShop:"Commerces",
+      cCulture:"Culture", cHealth:"Santé", cLodging:"Hébergement", cFav:"★ Favoris",
+      legend:"Légende", vMap:"Carte", vList:"Liste",
+      hintZoom:"Zoomez sur une ville pour voir les lieux", loading:"Recherche des lieux…",
+      searching:"Localisation…", located:"Position trouvée", noGeo:"Géolocalisation indisponible",
+      results:"lieu(x) accessible(s)", none:"Aucun lieu ici", noneDesc:"Aucun lieu accessible référencé dans cette zone. Essayez une autre ville, élargissez les filtres, ou contribuez sur OpenStreetMap.",
+      zoomMore:"Zoomez encore", zoomMoreDesc:"Rapprochez-vous d'une ville pour charger les lieux accessibles.",
+      errNet:"Serveur occupé, réessayez", noPlace:"Lieu introuvable, précisez la recherche",
+      openOsm:"Voir sur OpenStreetMap", cats:{food:"Restauration",toilets:"Toilettes",transport:"Transport",shop:"Commerce",culture:"Culture",health:"Santé",lodging:"Hébergement",other:"Lieu"},
+      accToilet:"Toilettes PMR", tactile:"Bandes podotactiles", hearing:"Boucle magnétique", braille:"Braille",
+      fav:"Favori", favAdd:"Ajouter aux favoris", statusYes:"Accès fauteuil", statusLimited:"Accès partiel",
+      contribute:"Contribuer", addTitle:"Signaler un lieu accessible", addHint:"Touchez la carte à l'emplacement du lieu, puis décrivez-le",
+      addName:"Nom du lieu (optionnel)", addStatus:"Accès fauteuil roulant", addComment:"Précisions (optionnel)",
+      addFeats:"Équipements présents", optYes:"Oui, accessible", optLimited:"Partiellement", optNo:"Non accessible",
+      send:"Envoyer", cancel:"Annuler", sending:"Envoi en cours…", thanks:"Merci ! Votre note a été envoyée à OpenStreetMap et sera vérifiée par la communauté.",
+      addFail:"Envoi direct impossible. OpenStreetMap s'ouvre pour publier votre note.", addModeOn:"Mode contribution : touchez la carte",
+      sortBy:"Tri", sortScore:"Score", sortDist:"Distance", goThere:"Y aller", score:"Score d'accès",
+      chkToilets:"Toilettes PMR", chkTactile:"Bandes podotactiles", chkHearing:"Boucle magnétique", chkBraille:"Braille", close:"Fermer",
+      minScore:"Score minimum", share:"Partager", copied:"Lien copié dans le presse-papier", sharePlace:"Partager ce lieu",
+      statPlaces:"lieux dans cette zone", statAvg:"score moyen"
+    },
+    en:{
+      skip:"Skip to results", tagline:"Accessible places · open data",
+      searchPh:"City, address, area…", go:"Go", nearme:"Near me",
+      accessLevel:"Access level", lvlYes:"Accessible", lvlLimited:"Partial",
+      features:"Facilities", fToilets:"Accessible WC", fTactile:"Tactile paving", fHearing:"Hearing loop", fBraille:"Braille",
+      category:"Place type", cFood:"Food & drink", cToilets:"Toilets", cTransport:"Transport", cShop:"Shops",
+      cCulture:"Culture", cHealth:"Health", cLodging:"Lodging", cFav:"★ Favorites",
+      legend:"Legend", vMap:"Map", vList:"List",
+      hintZoom:"Zoom into a city to see places", loading:"Finding places…",
+      searching:"Locating…", located:"Location found", noGeo:"Location unavailable",
+      results:"accessible place(s)", none:"Nothing here yet", noneDesc:"No accessible places mapped in this area. Try another city, widen filters, or contribute on OpenStreetMap.",
+      zoomMore:"Zoom in more", zoomMoreDesc:"Move closer to a city to load accessible places.",
+      errNet:"Server busy, try again", noPlace:"Place not found, refine your search",
+      openOsm:"View on OpenStreetMap", cats:{food:"Food",toilets:"Toilets",transport:"Transport",shop:"Shop",culture:"Culture",health:"Health",lodging:"Lodging",other:"Place"},
+      accToilet:"Accessible WC", tactile:"Tactile paving", hearing:"Hearing loop", braille:"Braille",
+      fav:"Favorite", favAdd:"Add to favorites", statusYes:"Wheelchair access", statusLimited:"Partial access",
+      contribute:"Contribute", addTitle:"Report an accessible place", addHint:"Tap the map where the place is, then describe it",
+      addName:"Place name (optional)", addStatus:"Wheelchair access", addComment:"Details (optional)",
+      addFeats:"Available facilities", optYes:"Yes, accessible", optLimited:"Partially", optNo:"Not accessible",
+      send:"Send", cancel:"Cancel", sending:"Sending…", thanks:"Thank you! Your note was sent to OpenStreetMap and will be reviewed by the community.",
+      addFail:"Direct send failed. OpenStreetMap will open so you can post your note.", addModeOn:"Contribute mode: tap the map",
+      sortBy:"Sort", sortScore:"Score", sortDist:"Distance", goThere:"Directions", score:"Access score",
+      chkToilets:"Accessible WC", chkTactile:"Tactile paving", chkHearing:"Hearing loop", chkBraille:"Braille", close:"Close",
+      minScore:"Minimum score", share:"Share", copied:"Link copied to clipboard", sharePlace:"Share this place",
+      statPlaces:"places in this area", statAvg:"average score"
+    }
+  };
+  var lang = "fr";
+  function t(k){ return I18N[lang][k]; }
+
+  /* ============ safeStorage (IndexedDB + in-memory fallback) ============ */
+  var safeStorage = (function(){
+    var DB="handimonde", STORE="kv", mem={}, dbp=null, ok=false;
+    try{
+      if(window.indexedDB){
+        dbp=new Promise(function(res){
+          var r=indexedDB.open(DB,1);
+          r.onupgradeneeded=function(e){ e.target.result.createObjectStore(STORE); };
+          r.onsuccess=function(e){ ok=true; res(e.target.result); };
+          r.onerror=function(){ res(null); };
+        });
+      }
+    }catch(e){ dbp=null; }
+    function get(key){
+      return new Promise(function(res){
+        if(!dbp){ res(mem[key]); return; }
+        dbp.then(function(db){
+          if(!db){ res(mem[key]); return; }
+          try{
+            var tx=db.transaction(STORE,"readonly").objectStore(STORE).get(key);
+            tx.onsuccess=function(){ res(tx.result===undefined?mem[key]:tx.result); };
+            tx.onerror=function(){ res(mem[key]); };
+          }catch(e){ res(mem[key]); }
+        });
+      });
+    }
+    function set(key,val){
+      mem[key]=val;
+      if(!dbp) return;
+      dbp.then(function(db){
+        if(!db) return;
+        try{ db.transaction(STORE,"readwrite").objectStore(STORE).put(val,key); }catch(e){}
+      });
+    }
+    return { get:get, set:set };
+  })();
+
+  /* ============ helpers ============ */
+  function $(sel,ctx){ return (ctx||document).querySelector(sel); }
+  function $all(sel,ctx){ return Array.prototype.slice.call((ctx||document).querySelectorAll(sel)); }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function sanitizeQuery(s){ return String(s||"").replace(/[<>{}\\^`]/g,"").trim().slice(0,120); }
+  function debounce(fn,ms){ var tmr; return function(){ var a=arguments,c=this; clearTimeout(tmr); tmr=setTimeout(function(){ fn.apply(c,a); },ms); }; }
+  function xhrJSON(method,url,body,cb){
+    var x=new XMLHttpRequest();
+    x.open(method,url,true);
+    x.timeout=30000;
+    if(method==="POST") x.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+    x.onreadystatechange=function(){
+      if(x.readyState!==4) return;
+      if(x.status>=200 && x.status<300){
+        try{ cb(null,JSON.parse(x.responseText)); }catch(e){ cb(e); }
+      }else{ cb(new Error("HTTP "+x.status)); }
+    };
+    x.ontimeout=function(){ cb(new Error("timeout")); };
+    x.onerror=function(){ cb(new Error("network")); };
+    x.send(body||null);
+  }
+
+  /* ============ tag interpretation ============ */
+  function categoryOf(tg){
+    if(!tg) return "other";
+    if(tg.amenity==="toilets") return "toilets";
+    if(["restaurant","cafe","fast_food","bar","pub","food_court","ice_cream","biergarten"].indexOf(tg.amenity)>=0) return "food";
+    if(["hospital","clinic","doctors","pharmacy","dentist"].indexOf(tg.amenity)>=0 || tg.healthcare) return "health";
+    if(["theatre","cinema","library","arts_centre","community_centre"].indexOf(tg.amenity)>=0) return "culture";
+    if(["museum","gallery","artwork","attraction","viewpoint","zoo","theme_park"].indexOf(tg.tourism)>=0) return "culture";
+    if(["hotel","hostel","guest_house","motel","apartment","chalet"].indexOf(tg.tourism)>=0) return "lodging";
+    if(tg.public_transport || tg.railway==="station" || tg.railway==="subway_entrance" || tg.amenity==="bus_station" || tg.aeroway || tg.highway==="bus_stop") return "transport";
+    if(tg.shop) return "shop";
+    if(["bank","post_office","townhall","school","university","place_of_worship","cinema"].indexOf(tg.amenity)>=0) return "culture";
+    return "other";
+  }
+  function featuresOf(tg){
+    var f={};
+    if(tg["toilets:wheelchair"]==="yes" || (tg.amenity==="toilets" && tg.wheelchair==="yes")) f.toilets=true;
+    if(tg.tactile_paving==="yes" || tg.tactile_writing==="yes") f.tactile=true;
+    if(tg.hearing_loop==="yes" || (tg.induction_loop && tg.induction_loop!=="no")) f.hearing=true;
+    if(tg.braille==="yes" || tg["tactile_writing:braille"]==="yes") f.braille=true;
+    return f;
+  }
+  function nameOf(tg,cat){
+    if(tg && (tg.name||tg["name:fr"]||tg["name:en"])) return tg.name||tg["name:fr"]||tg["name:en"];
+    if(tg && tg.brand) return tg.brand;
+    var c=t("cats"); return (c[cat]||c.other);
+  }
+  function subtitleOf(tg,cat){
+    var c=t("cats"); var base=c[cat]||c.other;
+    var extra = tg.cuisine || tg.shop || tg.tourism || tg.amenity || "";
+    extra = String(extra).replace(/_/g," ");
+    if(extra && extra.toLowerCase()!==base.toLowerCase()) return base+" · "+extra;
+    return base;
+  }
+
+  /* ============ Featured icons ============ */
+  var ICON = {
+    pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.7-6-10a6 6 0 1 1 12 0c0 4.3-6 10-6 10Z"/></svg>',
+    star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3Z"/></svg>',
+    starF:'<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3Z"/></svg>',
+    ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+    check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    route:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.3 18.2A5 5 0 0 0 13 13a5 5 0 0 1 4.7-5.2"/></svg>',
+    share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.3M8.3 13.2l7.4 4.5"/></svg>'
+  };
+
+  /* ============ state ============ */
+  var map, cluster, markerById={}, places=[], favSet={}, activeId=null, reqSeq=0;
+  var userLoc=null, sortMode="score", addMode=false, addLatLng=null, lastFocus=null;
+  var filters={ levels:{yes:true,limited:true}, feats:{}, cats:{}, minScore:0 };
+  var pendingShare=null;
+
+  /* access score /5 : fauteuil(2/1) + toilettes + vision(podotactile|braille) + audition */
+  function scoreOf(level,f){
+    var s = level==="yes"?2:1;
+    if(f.toilets) s+=1;
+    if(f.tactile||f.braille) s+=1;
+    if(f.hearing) s+=1;
+    return s;
+  }
+  function haversine(aLat,aLon,bLat,bLon){
+    var R=6371, rad=Math.PI/180;
+    var dLat=(bLat-aLat)*rad, dLon=(bLon-aLon)*rad;
+    var h=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(aLat*rad)*Math.cos(bLat*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    return R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+  }
+  function fmtDist(km){ return km<1?Math.round(km*1000)+" m":(km<10?km.toFixed(1):Math.round(km))+" km"; }
+
+  /* ============ map init ============ */
+  function initMap(){
+    map = L.map("map",{ zoomControl:true, worldCopyJump:true }).setView([47.2184,-1.5536],14); // Nantes (zone dense pour affichage immédiat)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+      maxZoom:19, attribution:'&copy; OpenStreetMap'
+    }).addTo(map);
+    cluster = (typeof L.markerClusterGroup==="function")
+      ? L.markerClusterGroup({ maxClusterRadius:48, chunkedLoading:true, showCoverageOnHover:false })
+      : L.featureGroup();
+    map.addLayer(cluster);
+    map.on("moveend", debounce(loadPlaces,550));
+    map.on("click", onMapClick);
+    setTimeout(function(){ map.invalidateSize(); loadPlaces(); }, 200);
+  }
+
+  /* ============ Overpass fetch ============ */
+  var OVP = ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+  function loadPlaces(){
+    if(!map) return;
+    if(catActive("fav")){ renderFavorites(); return; }
+    if(map.getZoom() < 13){
+      places=[]; renderResults(); rebuildMarkers();
+      setStatus("—", t("zoomMore"), false);
+      return;
+    }
+    var b=map.getBounds(), bbox=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(function(n){return n.toFixed(5);}).join(",");
+    var q="[out:json][timeout:25];nwr[\"wheelchair\"~\"^(yes|limited)$\"]("+bbox+");out center tags 500;";
+    var seq= ++reqSeq;
+    setStatus("", t("loading"), true);
+    tryOverpass(0,q,seq);
+  }
+  function tryOverpass(i,q,seq){
+    if(i>=OVP.length){ if(seq===reqSeq) setStatus("—", t("errNet"), false); return; }
+    xhrJSON("POST",OVP[i],"data="+encodeURIComponent(q),function(err,data){
+      if(seq!==reqSeq) return;
+      if(err || !data || !data.elements){ tryOverpass(i+1,q,seq); return; }
+      ingest(data.elements); renderResults(); rebuildMarkers();
+    });
+  }
+  function ingest(els){
+    var seen={}; places=[];
+    for(var i=0;i<els.length;i++){
+      var e=els[i], tg=e.tags||{};
+      var lat = e.lat!=null?e.lat:(e.center&&e.center.lat), lon=e.lon!=null?e.lon:(e.center&&e.center.lon);
+      if(lat==null||lon==null) continue;
+      var lvl = tg.wheelchair==="yes"?"yes":(tg.wheelchair==="limited"?"limited":null);
+      if(!lvl) continue;
+      var id=e.type[0]+e.id;
+      if(seen[id]) continue; seen[id]=1;
+      var cat=categoryOf(tg), feats=featuresOf(tg);
+      places.push({
+        id:id, osmType:e.type, osmId:e.id, lat:lat, lon:lon, level:lvl, cat:cat,
+        name:nameOf(tg,cat), sub:subtitleOf(tg,cat), feats:feats, score:scoreOf(lvl,feats),
+        desc:tg["wheelchair:description"]||tg["wheelchair:description:fr"]||""
+      });
+    }
+  }
+
+  /* ============ filtering ============ */
+  function catActive(c){ return !!filters.cats[c]; }
+  function anyCat(){ for(var k in filters.cats){ if(filters.cats[k]&&k!=="fav") return true; } return false; }
+  function anyFeat(){ for(var k in filters.feats){ if(filters.feats[k]) return true; } return false; }
+  function passFilters(p){
+    if(!filters.levels[p.level]) return false;
+    if(p.score < filters.minScore) return false;
+    if(anyCat() && !filters.cats[p.cat]) return false;
+    if(anyFeat()){
+      for(var f in filters.feats){ if(filters.feats[f] && !p.feats[f]) return false; }
+    }
+    return true;
+  }
+  function visiblePlaces(){ return places.filter(passFilters); }
+
+  /* ============ render markers ============ */
+  function makeIcon(p){
+    return L.divIcon({
+      className:"", iconSize:[30,42], iconAnchor:[15,40], popupAnchor:[0,-38],
+      html:'<div class="mk mk--'+p.level+'"><div class="mk__pin"><span class="mk__n">'+p.score+'</span></div></div>'
+    });
+  }
+  function rebuildMarkers(){
+    cluster.clearLayers(); markerById={};
+    var vis=visiblePlaces();
+    for(var i=0;i<vis.length;i++){
+      var p=vis[i];
+      var m=L.marker([p.lat,p.lon],{icon:makeIcon(p), keyboard:true, title:p.name, alt:p.name+" — "+(p.level==="yes"?t("statusYes"):t("statusLimited"))});
+      m.bindPopup(popupHTML(p));
+      (function(id){ m.on("click",function(){ setActive(id,false); }); })(p.id);
+      markerById[p.id]=m; cluster.addLayer(m);
+    }
+    applyPendingShare();
+  }
+  function popupHTML(p){
+    var badges="";
+    var fk=[["toilets","accToilet"],["tactile","tactile"],["hearing","hearing"],["braille","braille"]];
+    for(var i=0;i<fk.length;i++){ if(p.feats[fk[i][0]]) badges+='<span class="pop__badge">'+esc(t(fk[i][1]))+'</span>'; }
+    var status = p.level==="yes"?t("statusYes"):t("statusLimited");
+    var url="https://www.openstreetmap.org/"+p.osmType+"/"+p.osmId;
+    return '<div><p class="pop__name">'+esc(p.name)+'</p>'+
+      '<p class="pop__meta">'+esc(p.sub)+' · '+esc(status)+'</p>'+
+      (p.desc?'<p class="pop__meta">'+esc(p.desc)+'</p>':'')+
+      '<div class="pop__badges">'+badges+'</div>'+
+      '<div class="pop__actions">'+
+        '<a class="pop__link" href="https://www.openstreetmap.org/directions?to='+p.lat+'%2C'+p.lon+'" target="_blank" rel="noopener">'+ICON.route+esc(t("goThere"))+'</a>'+
+        '<a class="pop__link" href="'+url+'" target="_blank" rel="noopener">'+ICON.ext+esc(t("openOsm"))+'</a>'+
+        '<a class="pop__link" href="#" data-share="'+esc(p.id)+'">'+ICON.share+esc(t("share"))+'</a>'+
+      '</div></div>';
+  }
+
+  /* ============ render results list ============ */
+  function updateStats(vis){
+    var el=$("#statsbar");
+    if(!vis || !vis.length){ el.hidden=true; el.textContent=""; return; }
+    var sum=0; for(var i=0;i<vis.length;i++){ sum+=vis[i].score; }
+    var avg=(sum/vis.length).toFixed(1);
+    el.hidden=false;
+    el.innerHTML=vis.length+" "+esc(t("statPlaces"))+' <span class="star">\u2605</span> '+esc(t("statAvg"))+" "+avg+"/5";
+  }
+  function renderResults(){
+    var res=$("#results"); var vis=visiblePlaces();
+    if(map && map.getZoom()<13 && !catActive("fav")){
+      res.innerHTML=stateHTML("zoomMore","zoomMoreDesc");
+      setStatus("—", t("zoomMore"), false); updateStats(null); return;
+    }
+    setStatus(String(vis.length), t("results"), false);
+    if(!vis.length){ res.innerHTML=stateHTML("none","noneDesc"); updateStats(null); return; }
+    updateStats(vis);
+    if(sortMode==="dist" && userLoc){
+      vis.sort(function(a,b){ return haversine(userLoc.lat,userLoc.lon,a.lat,a.lon)-haversine(userLoc.lat,userLoc.lon,b.lat,b.lon); });
+    }else{
+      vis.sort(function(a,b){ return (b.score-a.score) || (a.level===b.level?0:(a.level==="yes"?-1:1)); });
+    }
+    var html="";
+    for(var i=0;i<vis.length && i<300;i++){ html+=cardHTML(vis[i]); }
+    res.innerHTML=html;
+    bindCards();
+  }
+  function renderFavorites(){
+    places = favList();
+    renderResults(); rebuildMarkers();
+    var vis=visiblePlaces();
+    setStatus(String(vis.length), t("cFav").replace("★ ",""), false);
+    if(vis.length){ var g=[]; vis.forEach(function(p){ g.push([p.lat,p.lon]); }); if(g.length) map.fitBounds(g,{maxZoom:15,padding:[40,40]}); }
+  }
+  function cardHTML(p){
+    var badges="";
+    var fk=[["toilets","accToilet"],["tactile","tactile"],["hearing","hearing"],["braille","braille"]];
+    for(var i=0;i<fk.length;i++){ if(p.feats[fk[i][0]]) badges+='<span class="badge">'+ICON.check+esc(t(fk[i][1]))+'</span>'; }
+    var lvlBadge = p.level==="yes"
+      ? '<span class="badge badge--yes">'+ICON.check+esc(t("statusYes"))+'</span>'
+      : '<span class="badge badge--limited">'+esc(t("statusLimited"))+'</span>';
+    var fav=!!favSet[p.id];
+    var dist = userLoc? '  ·  <span class="card__dist">'+esc(fmtDist(haversine(userLoc.lat,userLoc.lon,p.lat,p.lon)))+'</span>' : '';
+    var dir="https://www.openstreetmap.org/directions?to="+p.lat+"%2C"+p.lon;
+    return '<button class="card" data-id="'+esc(p.id)+'">'+
+      '<span class="ring ring--'+p.level+'" aria-label="'+esc(t("score"))+' '+p.score+' / 5">'+p.score+'</span>'+
+      '<span class="card__body">'+
+        '<span class="card__name">'+esc(p.name)+'</span>'+
+        '<span class="card__meta">'+esc(p.sub)+dist+'</span>'+
+        '<span class="badges">'+lvlBadge+badges+'</span>'+
+      '</span>'+
+      '<span class="card__fav">'+
+        '<a class="golink" href="'+dir+'" target="_blank" rel="noopener" aria-label="'+esc(t("goThere"))+' — '+esc(p.name)+'">'+ICON.route+'<span>'+esc(t("goThere"))+'</span></a>'+
+        '<button type="button" class="actbtn" data-share="'+esc(p.id)+'" aria-label="'+esc(t("sharePlace"))+'">'+ICON.share+'</button>'+
+        '<span class="favbtn" role="button" tabindex="0" data-fav="'+esc(p.id)+'" aria-pressed="'+(fav?"true":"false")+'" aria-label="'+esc(fav?t("fav"):t("favAdd"))+'">'+
+          (fav?ICON.starF:ICON.star)+'<span>'+esc(fav?t("fav"):t("favAdd"))+'</span></span>'+
+      '</span>'+
+    '</button>';
+  }
+  function stateHTML(titleKey,descKey){
+    return '<div class="state">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>'+
+      '<h3>'+esc(t(titleKey))+'</h3><p>'+esc(t(descKey))+'</p></div>';
+  }
+  function bindCards(){
+    $all(".card").forEach(function(c){
+      c.addEventListener("click",function(ev){
+        if(ev.target.closest("[data-fav]") || ev.target.closest("a")) return;
+        setActive(c.getAttribute("data-id"),true);
+      });
+    });
+    $all("[data-fav]").forEach(function(fb){
+      function toggle(){ toggleFav(fb.getAttribute("data-fav"), fb); }
+      fb.addEventListener("click",function(e){ e.stopPropagation(); toggle(); });
+      fb.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggle(); } });
+    });
+    $all("[data-share]").forEach(function(sb){
+      sb.addEventListener("click",function(e){ e.stopPropagation(); e.preventDefault(); sharePlace(sb.getAttribute("data-share")); });
+    });
+  }
+  function setActive(id,fromList){
+    activeId=id;
+    $all(".card").forEach(function(c){ c.classList.toggle("is-active", c.getAttribute("data-id")===id); });
+    var m=markerById[id];
+    if(m){
+      if(fromList){ map.setView(m.getLatLng(), Math.max(map.getZoom(),16), {animate:true}); }
+      if(typeof cluster.zoomToShowLayer==="function"){ cluster.zoomToShowLayer(m,function(){ m.openPopup(); }); }
+      else { m.openPopup(); }
+      if(window.matchMedia("(max-width:820px)").matches && fromList){ setView("map"); }
+    }
+  }
+
+  /* ============ share / deep-link ============ */
+  function findPlace(id){
+    var a=places.filter(function(x){return x.id===id;})[0];
+    if(a) return a;
+    return (favSet[id]&&favSet[id].data)||null;
+  }
+  function shareURL(p){
+    var base=location.href.split("#")[0];
+    return base+"#place="+encodeURIComponent(p.lat+"|"+p.lon+"|"+p.id+"|"+p.name);
+  }
+  function copyText(txt){
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).catch(function(){ legacyCopy(txt); }); }
+    else legacyCopy(txt);
+  }
+  function legacyCopy(txt){
+    var ta=document.createElement("textarea"); ta.value=txt;
+    ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+  }
+  function sharePlace(id){
+    var p=findPlace(id); if(!p) return;
+    var url=shareURL(p);
+    if(navigator.share){ navigator.share({title:p.name+" — HandiMonde", url:url}).catch(function(){}); return; }
+    copyText(url); setStatus("✓", t("copied"), false);
+  }
+  function parseHash(){
+    var m=location.hash.match(/place=([^&]+)/); if(!m) return null;
+    var parts=decodeURIComponent(m[1]).split("|");
+    var lat=parseFloat(parts[0]), lon=parseFloat(parts[1]);
+    if(isNaN(lat)||isNaN(lon)) return null;
+    return { lat:lat, lon:lon, id:parts[2]||"", name:parts[3]||"" };
+  }
+  function applyPendingShare(){
+    if(!pendingShare) return;
+    var m=markerById[pendingShare.id];
+    if(m){ setActive(pendingShare.id,true); pendingShare=null; }
+  }
+  function landingFallback(){
+    if(!pendingShare || !map) return;
+    if(markerById[pendingShare.id]){ applyPendingShare(); return; }
+    L.circleMarker([pendingShare.lat,pendingShare.lon],{radius:10,color:"#1B7A8C",weight:3,fillColor:"#1B7A8C",fillOpacity:.35})
+      .addTo(map).bindPopup(esc(pendingShare.name||t("sharePlace"))).openPopup();
+    pendingShare=null;
+  }
+
+  /* ============ favorites ============ */
+  function toggleFav(id,el){
+    var p = places.filter(function(x){return x.id===id;})[0] || (favSet[id]&&favSet[id].data);
+    if(favSet[id]){ delete favSet[id]; }
+    else if(p){ favSet[id]={data:p.data?p.data:p}; }
+    saveFavs();
+    var on=!!favSet[id];
+    if(el){ el.setAttribute("aria-pressed",on?"true":"false"); el.innerHTML=(on?ICON.starF:ICON.star)+'<span>'+esc(on?t("fav"):t("favAdd"))+'</span>'; el.setAttribute("aria-label",on?t("fav"):t("favAdd")); }
+    if(catActive("fav")) renderFavorites();
+  }
+  function favList(){ var a=[]; for(var k in favSet){ if(favSet[k]&&favSet[k].data) a.push(favSet[k].data); } return a; }
+  function saveFavs(){ var o={}; for(var k in favSet){ o[k]=favSet[k]; } safeStorage.set("favs",o); }
+
+  /* ============ status ============ */
+  function setStatus(count,msg,busy){
+    $("#count").textContent = count;
+    var sm=$("#statusMsg"); sm.textContent = msg;
+    var sb=$("#statusbar"); var sp=sb.querySelector(".spinner");
+    if(busy && !sp){ var s=document.createElement("span"); s.className="spinner"; sb.insertBefore(s, sb.firstChild.nextSibling); }
+    if(!busy && sp){ sp.parentNode.removeChild(sp); }
+  }
+
+  /* ============ search (Nominatim) ============ */
+  function geocode(q){
+    q=sanitizeQuery(q); if(!q) return;
+    setStatus("", t("searching"), true);
+    var url="https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language="+lang+"&q="+encodeURIComponent(q);
+    xhrJSON("GET",url,null,function(err,data){
+      if(err || !data || !data.length){ setStatus("—", t("noPlace"), false); return; }
+      var r=data[0];
+      if(r.boundingbox){
+        var bb=r.boundingbox.map(Number);
+        map.fitBounds([[bb[0],bb[2]],[bb[1],bb[3]]],{maxZoom:16,padding:[20,20]});
+      }else{ map.setView([Number(r.lat),Number(r.lon)],15); }
+    });
+  }
+
+  /* ============ geolocation ============ */
+  function locate(){
+    if(!navigator.geolocation){ setStatus("—", t("noGeo"), false); return; }
+    setStatus("", t("searching"), true);
+    navigator.geolocation.getCurrentPosition(function(pos){
+      userLoc={lat:pos.coords.latitude, lon:pos.coords.longitude};
+      map.setView([userLoc.lat,userLoc.lon],16,{animate:true});
+      L.circleMarker([userLoc.lat,userLoc.lon],{radius:9,color:"#FF5A38",weight:3,fillColor:"#FF5A38",fillOpacity:.35}).addTo(map);
+      $("#sortDist").hidden=false;
+      renderResults();
+    },function(){ setStatus("—", t("noGeo"), false); },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  }
+
+  /* ============ chips / filters ============ */
+  function bindChips(){
+    $all("#levelChips .chip").forEach(function(ch){
+      ch.addEventListener("click",function(){
+        var lv=ch.getAttribute("data-level"); var on=ch.getAttribute("aria-pressed")!=="true";
+        ch.setAttribute("aria-pressed",on?"true":"false"); filters.levels[lv]=on;
+        renderResults(); rebuildMarkers();
+      });
+    });
+    $all("#featChips .chip").forEach(function(ch){
+      ch.addEventListener("click",function(){
+        var f=ch.getAttribute("data-feat"); var on=ch.getAttribute("aria-pressed")!=="true";
+        ch.setAttribute("aria-pressed",on?"true":"false"); filters.feats[f]=on;
+        renderResults(); rebuildMarkers();
+      });
+    });
+    $all("#catChips .chip").forEach(function(ch){
+      ch.addEventListener("click",function(){
+        var c=ch.getAttribute("data-cat"); var on=ch.getAttribute("aria-pressed")!=="true";
+        ch.setAttribute("aria-pressed",on?"true":"false"); filters.cats[c]=on;
+        if(c==="fav"){ if(on){ renderFavorites(); } else { loadPlaces(); } return; }
+        if(catActive("fav")){ /* keep */ } 
+        renderResults(); rebuildMarkers();
+      });
+    });
+  }
+
+  /* ============ theme / font / lang ============ */
+  function applyTheme(th){
+    document.body.setAttribute("data-theme",th);
+    $all("[data-theme-btn]").forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-theme-btn")===th?"true":"false"); });
+    safeStorage.set("theme",th);
+  }
+  var FS=[100,115,130,145]; var fsIdx=0;
+  function applyFont(){ document.documentElement.style.setProperty("--fs-root",FS[fsIdx]+"%"); safeStorage.set("fs",fsIdx); if(map) setTimeout(function(){map.invalidateSize();},50); }
+  function applyLang(l){
+    lang=l; document.documentElement.setAttribute("lang",l);
+    $("#langBtn").textContent = l.toUpperCase();
+    $all("[data-i18n]").forEach(function(el){ var k=el.getAttribute("data-i18n"); if(I18N[l][k]) el.textContent=I18N[l][k]; });
+    $all("[data-i18n-ph]").forEach(function(el){ var k=el.getAttribute("data-i18n-ph"); if(I18N[l][k]) el.setAttribute("placeholder",I18N[l][k]); });
+    $all("[data-i18n-al]").forEach(function(el){ var k=el.getAttribute("data-i18n-al"); if(I18N[l][k]) el.setAttribute("aria-label",I18N[l][k]); });
+    safeStorage.set("lang",l);
+    renderResults();
+  }
+
+  /* ============ mobile view toggle ============ */
+  function setView(v){
+    document.body.setAttribute("data-view",v);
+    $("#viewMap").setAttribute("aria-pressed",v==="map"?"true":"false");
+    $("#viewList").setAttribute("aria-pressed",v==="list"?"true":"false");
+    if(v==="map" && map) setTimeout(function(){ map.invalidateSize(); },60);
+  }
+
+  /* ============ wire up ============ */
+  function bind(){
+    $("#searchForm").addEventListener("submit",function(e){ e.preventDefault(); geocode($("#searchInput").value); });
+    $("#geoBtn").addEventListener("click",locate);
+    $("#fsUp").addEventListener("click",function(){ if(fsIdx<FS.length-1){ fsIdx++; applyFont(); } });
+    $("#fsDown").addEventListener("click",function(){ if(fsIdx>0){ fsIdx--; applyFont(); } });
+    $all("[data-theme-btn]").forEach(function(b){ b.addEventListener("click",function(){ applyTheme(b.getAttribute("data-theme-btn")); }); });
+    $("#langBtn").addEventListener("click",function(){ applyLang(lang==="fr"?"en":"fr"); });
+    $("#minScore").addEventListener("input",function(){
+      filters.minScore=parseInt(this.value,10);
+      var lab=filters.minScore+" / 5";
+      $("#minScoreVal").textContent=lab;
+      this.setAttribute("aria-valuetext",filters.minScore+" sur 5");
+      renderResults(); rebuildMarkers();
+    });
+    $("#viewMap").addEventListener("click",function(){ setView("map"); });
+    $("#viewList").addEventListener("click",function(){ setView("list"); });
+    $all(".sortbtn").forEach(function(b){
+      b.addEventListener("click",function(){
+        sortMode=b.getAttribute("data-sort");
+        $all(".sortbtn").forEach(function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); });
+        renderResults();
+      });
+    });
+    bindContribute();
+    bindChips();
+  }
+
+  /* ============ contribute (OSM Notes API, anonymous) ============ */
+  function bindContribute(){
+    $("#addBtn").addEventListener("click",toggleAddMode);
+    $("#modalClose").addEventListener("click",closeModal);
+    $("#modalCancel").addEventListener("click",closeModal);
+    $("#modal").addEventListener("click",function(e){ if(e.target===$("#modal")) closeModal(); });
+    document.addEventListener("keydown",function(e){
+      if(e.key==="Escape" && !$("#modal").hidden) closeModal();
+      if(e.key==="Tab" && !$("#modal").hidden) trapFocus(e);
+    });
+    $("#addForm").addEventListener("submit",submitNote);
+  }
+  function toggleAddMode(){
+    addMode=!addMode;
+    $("#addBtn").setAttribute("aria-pressed",addMode?"true":"false");
+    $("#addBanner").hidden=!addMode;
+    $(".mapwrap").classList.toggle("is-adding",addMode);
+    if(addMode && window.matchMedia("(max-width:820px)").matches) setView("map");
+  }
+  function onMapClick(e){
+    if(!addMode) return;
+    addLatLng=e.latlng;
+    openModal();
+  }
+  function openModal(){
+    lastFocus=document.activeElement;
+    $("#modal").hidden=false;
+    $("#addName").focus();
+  }
+  function closeModal(){
+    $("#modal").hidden=true;
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function trapFocus(e){
+    var f=$all('#modalBox button, #modalBox a, #modalBox input, #modalBox textarea, #modalBox [tabindex]').filter(function(el){ return !el.disabled && el.offsetParent!==null; });
+    if(!f.length) return;
+    var first=f[0], last=f[f.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+  function buildNoteText(){
+    var form=$("#addForm");
+    var name=sanitizeQuery($("#addName").value);
+    var acc=form.querySelector('input[name="acc"]:checked').value;
+    var accTxt = acc==="yes"?t("optYes"):(acc==="limited"?t("optLimited"):t("optNo"));
+    var fe=[];
+    if(form.querySelector('input[name="f_toilets"]').checked) fe.push(t("chkToilets"));
+    if(form.querySelector('input[name="f_tactile"]').checked) fe.push(t("chkTactile"));
+    if(form.querySelector('input[name="f_hearing"]').checked) fe.push(t("chkHearing"));
+    if(form.querySelector('input[name="f_braille"]').checked) fe.push(t("chkBraille"));
+    var comment=sanitizeQuery($("#addComment").value);
+    var txt="[HandiMonde] "+(name||"Lieu")+"\n"+t("addStatus")+": "+accTxt;
+    if(fe.length) txt+="\n"+t("addFeats")+": "+fe.join(", ");
+    if(comment) txt+="\n"+comment;
+    txt+="\n(via HandiMonde — accessibilité)";
+    return txt;
+  }
+  function submitNote(e){
+    e.preventDefault();
+    if(!addLatLng) return;
+    var lat=addLatLng.lat, lon=addLatLng.lng, txt=buildNoteText();
+    var btn=$("#addSend"); btn.disabled=true; btn.textContent=t("sending");
+    var url="https://api.openstreetmap.org/api/0.6/notes.json?lat="+lat+"&lon="+lon+"&text="+encodeURIComponent(txt);
+    xhrJSON("POST",url,null,function(err){
+      btn.disabled=false; btn.textContent=t("send");
+      if(err){
+        window.open("https://www.openstreetmap.org/note/new#map=19/"+lat.toFixed(5)+"/"+lon.toFixed(5),"_blank","noopener");
+        setStatus("—", t("addFail"), false);
+      }else{
+        L.circleMarker([lat,lon],{radius:10,color:"#16813A",weight:3,fillColor:"#16813A",fillOpacity:.4}).addTo(map)
+          .bindPopup(esc(t("thanks"))).openPopup();
+        setStatus("✓", t("thanks"), false);
+      }
+      closeModal(); toggleAddMode(); $("#addForm").reset();
+    });
+  }
+
+  /* ============ restore prefs then start ============ */
+  function boot(){
+    bind(); initMap();
+    var hp=parseHash();
+    if(hp){
+      pendingShare=hp;
+      map.setView([hp.lat,hp.lon],17,{animate:false});
+      setTimeout(landingFallback,4500);
+    }
+    Promise.all([safeStorage.get("theme"),safeStorage.get("fs"),safeStorage.get("lang"),safeStorage.get("favs")])
+    .then(function(v){
+      if(v[0]) applyTheme(v[0]);
+      if(typeof v[1]==="number"){ fsIdx=v[1]; applyFont(); }
+      if(v[2]) applyLang(v[2]);
+      if(v[3]) favSet=v[3];
+    });
+  }
+
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot);
+  else boot();
+
+})();
+</script>
+</body>
+</html>

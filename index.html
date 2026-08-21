@@ -424,6 +424,9 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
 
       <button class="iconbtn" id="langBtn" aria-label="Changer de langue (FR / EN)" title="FR / EN"
         style="border:1px solid var(--line);background:var(--panel);min-width:52px;font-family:'JetBrains Mono',monospace">FR</button>
+      <button class="iconbtn" id="aiBtn" aria-label="Param\u00e8tres IA" title="IA" style="border:1px solid var(--line);background:var(--panel)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4L12 3Z"/><path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8L18 14Z"/></svg>
+      </button>
     </div>
   </header>
 
@@ -478,7 +481,10 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
               <button type="button" class="chip" data-cat="culture" aria-pressed="false" data-i18n="cCulture">Culture</button>
               <button type="button" class="chip" data-cat="health" aria-pressed="false" data-i18n="cHealth">Santé</button>
               <button type="button" class="chip" data-cat="lodging" aria-pressed="false" data-i18n="cLodging">Hébergement</button>
-              <button type="button" class="chip" data-cat="fav" aria-pressed="false" data-i18n="cFav">★ Favoris</button>
+              <button type="button" class="chip" data-cat="spa" aria-pressed="false" data-i18n="cSpa">Spa</button>
+              <button type="button" class="chip" data-cat="sauna" aria-pressed="false" data-i18n="cSauna">Sauna</button>
+              <button type="button" class="chip" data-cat="club" aria-pressed="false" data-i18n="cClub">Clubs</button>
+              <button type="button" class="chip" data-cat="fav" aria-pressed="false" data-i18n="cFav">\u2605 Favoris</button>
             </div>
           </fieldset>
         </div>
@@ -552,6 +558,41 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     </div>
   </div>
 
+  <div class="modal" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle" hidden>
+    <div class="modal__box" id="aiModalBox">
+      <div class="modal__head">
+        <h2 id="aiModalTitle" data-i18n="aiSettings">Param\u00e8tres IA</h2>
+        <button class="modal__x" id="aiClose" type="button" aria-label="Fermer" data-i18n-al="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <p class="modal__hint" data-i18n="aiNoKey">Ajoutez une cl\u00e9 API gratuite pour activer les r\u00e9sum\u00e9s IA.</p>
+      <label class="flabel" for="aiProvider" data-i18n="aiProvider">Fournisseur</label>
+      <select class="finput" id="aiProvider">
+        <option value="mistral">Mistral \u2014 1B tokens/mois gratuit</option>
+        <option value="groq">Groq \u2014 Llama 3.3 70B, gratuit</option>
+        <option value="cerebras">Cerebras \u2014 1M tokens/jour gratuit</option>
+        <option value="gemini">Google Gemini Flash \u2014 gratuit</option>
+      </select>
+      <label class="flabel" for="aiKey" data-i18n="aiKey">Cl\u00e9 API</label>
+      <input class="finput" id="aiKey" type="password" autocomplete="off" spellcheck="false" data-i18n-ph="aiKeyPh" placeholder="Collez votre cl\u00e9\u2026">
+      <a class="pop__link" id="aiGetKey" href="#" target="_blank" rel="noopener" style="margin-top:10px;display:inline-flex" data-i18n="aiGetKey">Obtenir une cl\u00e9 gratuite</a>
+      <div class="modal__foot">
+        <button class="btn btn--ghost" type="button" id="aiClear" data-i18n="aiClear">Effacer la cl\u00e9</button>
+        <button class="btn btn--accent" type="button" id="aiSave" data-i18n="aiSave">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="aiResult" role="dialog" aria-modal="true" aria-labelledby="aiResultTitle" hidden>
+    <div class="modal__box" id="aiResultBox">
+      <div class="modal__head">
+        <h2 id="aiResultTitle" data-i18n="aiSummary">R\u00e9sum\u00e9 accessibilit\u00e9 (IA)</h2>
+        <button class="modal__x" id="aiResultClose" type="button" aria-label="Fermer" data-i18n-al="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <p id="aiResultName" style="font-family:'Lexend',sans-serif;font-weight:700;margin:0 0 8px"></p>
+      <div id="aiResultBody" aria-live="polite"></div>
+      <p class="modal__hint" style="margin-top:14px" data-i18n="aiDisclaimer">R\u00e9sum\u00e9 g\u00e9n\u00e9r\u00e9 par IA \u00e0 partir des donn\u00e9es OpenStreetMap. \u00c0 v\u00e9rifier sur place.</p>
+    </div>
+  </div>
+
   <nav class="viewtoggle" aria-label="Basculer carte / liste">
     <button class="iconbtn" id="viewMap" aria-pressed="true" data-i18n="vMap">Carte</button>
     <button class="iconbtn" id="viewList" aria-pressed="false" data-i18n="vList">Liste</button>
@@ -572,14 +613,14 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       accessLevel:"Niveau d'accès", lvlYes:"Accessible", lvlLimited:"Partiel",
       features:"Équipements", fToilets:"Toilettes PMR", fTactile:"Podotactile", fHearing:"Boucle magnétique", fBraille:"Braille",
       category:"Type de lieu", cFood:"Restauration", cToilets:"Toilettes", cTransport:"Transport", cShop:"Commerces",
-      cCulture:"Culture", cHealth:"Santé", cLodging:"Hébergement", cFav:"★ Favoris",
+      cCulture:"Culture", cHealth:"Santé", cLodging:"Hébergement", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubs", cFav:"★ Favoris",
       legend:"Légende", vMap:"Carte", vList:"Liste",
       hintZoom:"Zoomez sur une ville pour voir les lieux", loading:"Recherche des lieux…",
       searching:"Localisation…", located:"Position trouvée", noGeo:"Géolocalisation indisponible",
       results:"lieu(x) accessible(s)", none:"Aucun lieu ici", noneDesc:"Aucun lieu accessible référencé dans cette zone. Essayez une autre ville, élargissez les filtres, ou contribuez sur OpenStreetMap.",
       zoomMore:"Zoomez encore", zoomMoreDesc:"Rapprochez-vous d'une ville pour charger les lieux accessibles.",
       errNet:"Serveur occupé, réessayez", noPlace:"Lieu introuvable, précisez la recherche",
-      openOsm:"Voir sur OpenStreetMap", cats:{food:"Restauration",toilets:"Toilettes",transport:"Transport",shop:"Commerce",culture:"Culture",health:"Santé",lodging:"Hébergement",other:"Lieu"},
+      openOsm:"Voir sur OpenStreetMap", cats:{food:"Restauration",toilets:"Toilettes",transport:"Transport",shop:"Commerce",culture:"Culture",health:"Santé",lodging:"Hébergement",spa:"Spa",sauna:"Sauna",club:"Club",other:"Lieu"},
       accToilet:"Toilettes PMR", tactile:"Bandes podotactiles", hearing:"Boucle magnétique", braille:"Braille",
       fav:"Favori", favAdd:"Ajouter aux favoris", statusYes:"Accès fauteuil", statusLimited:"Accès partiel",
       contribute:"Contribuer", addTitle:"Signaler un lieu accessible", addHint:"Touchez la carte à l'emplacement du lieu, puis décrivez-le",
@@ -590,7 +631,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Tri", sortScore:"Score", sortDist:"Distance", goThere:"Y aller", score:"Score d'accès",
       chkToilets:"Toilettes PMR", chkTactile:"Bandes podotactiles", chkHearing:"Boucle magnétique", chkBraille:"Braille", close:"Fermer",
       minScore:"Score minimum", share:"Partager", copied:"Lien copié dans le presse-papier", sharePlace:"Partager ce lieu",
-      statPlaces:"lieux dans cette zone", statAvg:"score moyen"
+      statPlaces:"lieux dans cette zone", statAvg:"score moyen",
+      errNetDesc:"Les serveurs de données sont saturés ou momentanément indisponibles. Réessayez dans un instant.", retry:"Réessayer",
+      ai:"IA", aiSummary:"Résumé accessibilité (IA)", aiGenerating:"Génération du résumé…", aiError:"IA indisponible (vérifiez la clé ou réessayez).",
+      aiSettings:"Paramètres IA", aiProvider:"Fournisseur", aiKey:"Clé API", aiKeyPh:"Collez votre clé…", aiSave:"Enregistrer", aiClear:"Effacer la clé",
+      aiNoKey:"Ajoutez une clé API gratuite pour activer les résumés IA.", aiSaved:"Clé enregistrée", aiCleared:"Clé effacée",
+      aiDisclaimer:"Résumé généré par IA à partir des données OpenStreetMap. À vérifier sur place.", aiGetKey:"Obtenir une clé gratuite"
     },
     en:{
       skip:"Skip to results", tagline:"Accessible places · open data",
@@ -598,14 +644,14 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       accessLevel:"Access level", lvlYes:"Accessible", lvlLimited:"Partial",
       features:"Facilities", fToilets:"Accessible WC", fTactile:"Tactile paving", fHearing:"Hearing loop", fBraille:"Braille",
       category:"Place type", cFood:"Food & drink", cToilets:"Toilets", cTransport:"Transport", cShop:"Shops",
-      cCulture:"Culture", cHealth:"Health", cLodging:"Lodging", cFav:"★ Favorites",
+      cCulture:"Culture", cHealth:"Health", cLodging:"Lodging", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubs", cFav:"★ Favorites",
       legend:"Legend", vMap:"Map", vList:"List",
       hintZoom:"Zoom into a city to see places", loading:"Finding places…",
       searching:"Locating…", located:"Location found", noGeo:"Location unavailable",
       results:"accessible place(s)", none:"Nothing here yet", noneDesc:"No accessible places mapped in this area. Try another city, widen filters, or contribute on OpenStreetMap.",
       zoomMore:"Zoom in more", zoomMoreDesc:"Move closer to a city to load accessible places.",
       errNet:"Server busy, try again", noPlace:"Place not found, refine your search",
-      openOsm:"View on OpenStreetMap", cats:{food:"Food",toilets:"Toilets",transport:"Transport",shop:"Shop",culture:"Culture",health:"Health",lodging:"Lodging",other:"Place"},
+      openOsm:"View on OpenStreetMap", cats:{food:"Food",toilets:"Toilets",transport:"Transport",shop:"Shop",culture:"Culture",health:"Health",lodging:"Lodging",spa:"Spa",sauna:"Sauna",club:"Club",other:"Place"},
       accToilet:"Accessible WC", tactile:"Tactile paving", hearing:"Hearing loop", braille:"Braille",
       fav:"Favorite", favAdd:"Add to favorites", statusYes:"Wheelchair access", statusLimited:"Partial access",
       contribute:"Contribute", addTitle:"Report an accessible place", addHint:"Tap the map where the place is, then describe it",
@@ -616,7 +662,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Sort", sortScore:"Score", sortDist:"Distance", goThere:"Directions", score:"Access score",
       chkToilets:"Accessible WC", chkTactile:"Tactile paving", chkHearing:"Hearing loop", chkBraille:"Braille", close:"Close",
       minScore:"Minimum score", share:"Share", copied:"Link copied to clipboard", sharePlace:"Share this place",
-      statPlaces:"places in this area", statAvg:"average score"
+      statPlaces:"places in this area", statAvg:"average score",
+      errNetDesc:"The data servers are busy or momentarily unavailable. Try again shortly.", retry:"Retry",
+      ai:"AI", aiSummary:"Accessibility summary (AI)", aiGenerating:"Generating summary…", aiError:"AI unavailable (check the key or retry).",
+      aiSettings:"AI settings", aiProvider:"Provider", aiKey:"API key", aiKeyPh:"Paste your key…", aiSave:"Save", aiClear:"Clear key",
+      aiNoKey:"Add a free API key to enable AI summaries.", aiSaved:"Key saved", aiCleared:"Key cleared",
+      aiDisclaimer:"AI-generated summary from OpenStreetMap data. Verify on site.", aiGetKey:"Get a free key"
     }
   };
   var lang = "fr";
@@ -668,7 +719,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   function xhrJSON(method,url,body,cb){
     var x=new XMLHttpRequest();
     x.open(method,url,true);
-    x.timeout=30000;
+    x.timeout=45000;
     if(method==="POST") x.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
     x.onreadystatechange=function(){
       if(x.readyState!==4) return;
@@ -685,6 +736,9 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   function categoryOf(tg){
     if(!tg) return "other";
     if(tg.amenity==="toilets") return "toilets";
+    if(tg.leisure==="sauna" || tg.amenity==="sauna") return "sauna";
+    if(tg.leisure==="spa" || tg.amenity==="spa" || tg.leisure==="hot_spring" || tg.shop==="massage") return "spa";
+    if(tg.amenity==="nightclub" || tg.amenity==="social_club" || tg.club || tg.leisure==="dance") return "club";
     if(["restaurant","cafe","fast_food","bar","pub","food_court","ice_cream","biergarten"].indexOf(tg.amenity)>=0) return "food";
     if(["hospital","clinic","doctors","pharmacy","dentist"].indexOf(tg.amenity)>=0 || tg.healthcare) return "health";
     if(["theatre","cinema","library","arts_centre","community_centre"].indexOf(tg.amenity)>=0) return "culture";
@@ -724,7 +778,8 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
     check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
     route:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.3 18.2A5 5 0 0 0 13 13a5 5 0 0 1 4.7-5.2"/></svg>',
-    share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.3M8.3 13.2l7.4 4.5"/></svg>'
+    share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.3M8.3 13.2l7.4 4.5"/></svg>',
+    spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4L12 3Z"/></svg>'
   };
 
   /* ============ state ============ */
@@ -765,7 +820,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   }
 
   /* ============ Overpass fetch ============ */
-  var OVP = ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+  var OVP = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://api.openstreetmap.fr/oapi/interpreter"
+  ];
   function loadPlaces(){
     if(!map) return;
     if(catActive("fav")){ renderFavorites(); return; }
@@ -778,15 +838,28 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     var q="[out:json][timeout:25];nwr[\"wheelchair\"~\"^(yes|limited)$\"]("+bbox+");out center tags 500;";
     var seq= ++reqSeq;
     setStatus("", t("loading"), true);
-    tryOverpass(0,q,seq);
+    tryOverpass(0,q,seq,0);
   }
-  function tryOverpass(i,q,seq){
-    if(i>=OVP.length){ if(seq===reqSeq) setStatus("—", t("errNet"), false); return; }
+  function tryOverpass(i,q,seq,attempt){
+    if(i>=OVP.length){
+      if(attempt<1){ setTimeout(function(){ if(seq===reqSeq) tryOverpass(0,q,seq,attempt+1); }, 1600); return; }
+      if(seq===reqSeq){ setStatus("—", t("errNet"), false); renderError(); }
+      return;
+    }
     xhrJSON("POST",OVP[i],"data="+encodeURIComponent(q),function(err,data){
       if(seq!==reqSeq) return;
-      if(err || !data || !data.elements){ tryOverpass(i+1,q,seq); return; }
+      if(err || !data || !data.elements){ tryOverpass(i+1,q,seq,attempt); return; }
       ingest(data.elements); renderResults(); rebuildMarkers();
     });
+  }
+  function renderError(){
+    var res=$("#results");
+    res.innerHTML='<div class="state">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>'+
+      '<h3>'+esc(t("errNet"))+'</h3><p>'+esc(t("errNetDesc"))+'</p>'+
+      '<button type="button" class="btn btn--brand" id="retryBtn" style="justify-content:center">'+esc(t("retry"))+'</button></div>';
+    var rb=$("#retryBtn"); if(rb) rb.addEventListener("click",function(){ setStatus("", t("loading"), true); loadPlaces(); });
+    updateStats(null);
   }
   function ingest(els){
     var seen={}; places=[];
@@ -855,6 +928,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
         '<a class="pop__link" href="https://www.openstreetmap.org/directions?to='+p.lat+'%2C'+p.lon+'" target="_blank" rel="noopener">'+ICON.route+esc(t("goThere"))+'</a>'+
         '<a class="pop__link" href="'+url+'" target="_blank" rel="noopener">'+ICON.ext+esc(t("openOsm"))+'</a>'+
         '<a class="pop__link" href="#" data-share="'+esc(p.id)+'">'+ICON.share+esc(t("share"))+'</a>'+
+        '<a class="pop__link" href="#" data-ai="'+esc(p.id)+'">'+ICON.spark+esc(t("ai"))+'</a>'+
       '</div></div>';
   }
 
@@ -913,6 +987,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       '<span class="card__fav">'+
         '<a class="golink" href="'+dir+'" target="_blank" rel="noopener" aria-label="'+esc(t("goThere"))+' — '+esc(p.name)+'">'+ICON.route+'<span>'+esc(t("goThere"))+'</span></a>'+
         '<button type="button" class="actbtn" data-share="'+esc(p.id)+'" aria-label="'+esc(t("sharePlace"))+'">'+ICON.share+'</button>'+
+        '<button type="button" class="actbtn" data-ai="'+esc(p.id)+'" aria-label="'+esc(t("aiSummary"))+'">'+ICON.spark+'</button>'+
         '<span class="favbtn" role="button" tabindex="0" data-fav="'+esc(p.id)+'" aria-pressed="'+(fav?"true":"false")+'" aria-label="'+esc(fav?t("fav"):t("favAdd"))+'">'+
           (fav?ICON.starF:ICON.star)+'<span>'+esc(fav?t("fav"):t("favAdd"))+'</span></span>'+
       '</span>'+
@@ -1127,6 +1202,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     });
     bindContribute();
     bindChips();
+    bindAi();
   }
 
   /* ============ contribute (OSM Notes API, anonymous) ============ */
@@ -1206,6 +1282,99 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     });
   }
 
+  /* ============ AI (BYOK : Mistral -> Groq -> Cerebras -> Gemini) ============ */
+  var AI_PROVIDERS = {
+    mistral:{ url:"https://api.mistral.ai/v1/chat/completions", model:"mistral-small-latest", get:"https://console.mistral.ai/api-keys" },
+    groq:{ url:"https://api.groq.com/openai/v1/chat/completions", model:"llama-3.3-70b-versatile", get:"https://console.groq.com/keys" },
+    cerebras:{ url:"https://api.cerebras.ai/v1/chat/completions", model:"llama-3.3-70b", get:"https://cloud.cerebras.ai/" },
+    gemini:{ url:"https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", model:"gemini-2.5-flash", get:"https://aistudio.google.com/apikey" }
+  };
+  var aiCfg={ provider:"mistral", key:"" };
+  function sanitizeKey(s){ return String(s||"").replace(/[^\x21-\x7E]/g,"").trim().slice(0,200); }
+  function aiHasKey(){ return !!(aiCfg.key && aiCfg.key.length>=8); }
+  function updateGetKeyLink(){ var pv=$("#aiProvider").value; if(AI_PROVIDERS[pv]) $("#aiGetKey").href=AI_PROVIDERS[pv].get; }
+  function openAiSettings(){
+    lastFocus=document.activeElement;
+    $("#aiProvider").value=aiCfg.provider; $("#aiKey").value=aiCfg.key||"";
+    updateGetKeyLink(); $("#aiModal").hidden=false; $("#aiProvider").focus();
+  }
+  function closeAiSettings(){ $("#aiModal").hidden=true; if(lastFocus&&lastFocus.focus) lastFocus.focus(); }
+  function saveAi(){
+    aiCfg.provider=$("#aiProvider").value; aiCfg.key=sanitizeKey($("#aiKey").value);
+    safeStorage.set("ai",{ provider:aiCfg.provider, key:aiCfg.key });
+    setStatus("\u2713", t(aiCfg.key?"aiSaved":"aiCleared"), false); closeAiSettings();
+  }
+  function clearAi(){
+    aiCfg.key=""; $("#aiKey").value="";
+    safeStorage.set("ai",{ provider:aiCfg.provider, key:"" });
+    setStatus("\u2014", t("aiCleared"), false);
+  }
+  function aiPromptFor(p){
+    return JSON.stringify({
+      nom:p.name, type:(t("cats")[p.cat]||p.cat),
+      acces_fauteuil:(p.level==="yes"?"complet":"partiel"),
+      toilettes_pmr:!!p.feats.toilets, bandes_podotactiles:!!p.feats.tactile,
+      boucle_magnetique:!!p.feats.hearing, braille:!!p.feats.braille,
+      score_sur_5:p.score, description_osm:p.desc||""
+    });
+  }
+  function aiSummarize(p, cb){
+    if(!aiHasKey()){ cb(new Error("nokey")); return; }
+    var pr=AI_PROVIDERS[aiCfg.provider]||AI_PROVIDERS.mistral;
+    var sys=(lang==="fr")
+      ? "Tu es un expert de l'accessibilite handicap. A partir UNIQUEMENT des donnees OpenStreetMap fournies en JSON, redige un resume concret et bienveillant de 3 a 4 phrases sur l'accessibilite de ce lieu pour une personne en situation de handicap (moteur, visuel, auditif). N'invente rien au-dela des donnees. Termine par un conseil pratique. Reponds en francais, sans markdown."
+      : "You are a disability-accessibility expert. Using ONLY the provided OpenStreetMap data (JSON), write a concrete, kind 3-4 sentence summary of this venue's accessibility for a person with a disability (mobility, vision, hearing). Do not invent beyond the data. End with one practical tip. Reply in English, no markdown.";
+    var body=JSON.stringify({ model:pr.model, max_tokens:320, temperature:0.4,
+      messages:[{role:"system",content:sys},{role:"user",content:aiPromptFor(p)}] });
+    var x=new XMLHttpRequest();
+    x.open("POST",pr.url,true); x.timeout=45000;
+    x.setRequestHeader("Content-Type","application/json");
+    x.setRequestHeader("Authorization","Bearer "+aiCfg.key);
+    x.onreadystatechange=function(){
+      if(x.readyState!==4) return;
+      if(x.status>=200 && x.status<300){
+        try{ var d=JSON.parse(x.responseText);
+          var txt=d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
+          if(txt){ cb(null,String(txt).trim()); } else { cb(new Error("empty")); }
+        }catch(e){ cb(e); }
+      }else{ cb(new Error("HTTP "+x.status)); }
+    };
+    x.ontimeout=function(){ cb(new Error("timeout")); };
+    x.onerror=function(){ cb(new Error("network")); };
+    x.send(body);
+  }
+  function openAiResult(p){
+    if(!aiHasKey()){ openAiSettings(); return; }
+    lastFocus=document.activeElement;
+    $("#aiResultName").textContent=p.name;
+    $("#aiResultBody").innerHTML='<div class="state" style="padding:16px 0"><span class="spinner"></span><p>'+esc(t("aiGenerating"))+'</p></div>';
+    $("#aiResult").hidden=false; $("#aiResultClose").focus();
+    aiSummarize(p,function(err,txt){
+      if($("#aiResult").hidden) return;
+      if(err){ $("#aiResultBody").innerHTML='<p>'+esc(t("aiError"))+'</p>'; return; }
+      $("#aiResultBody").innerHTML='<p style="line-height:1.55">'+esc(txt).replace(/\n+/g,"<br>")+'</p>';
+    });
+  }
+  function closeAiResult(){ $("#aiResult").hidden=true; if(lastFocus&&lastFocus.focus) lastFocus.focus(); }
+  function bindAi(){
+    $("#aiBtn").addEventListener("click",openAiSettings);
+    $("#aiClose").addEventListener("click",closeAiSettings);
+    $("#aiSave").addEventListener("click",saveAi);
+    $("#aiClear").addEventListener("click",clearAi);
+    $("#aiProvider").addEventListener("change",updateGetKeyLink);
+    $("#aiModal").addEventListener("click",function(e){ if(e.target===$("#aiModal")) closeAiSettings(); });
+    $("#aiResultClose").addEventListener("click",closeAiResult);
+    $("#aiResult").addEventListener("click",function(e){ if(e.target===$("#aiResult")) closeAiResult(); });
+    document.addEventListener("keydown",function(e){
+      if(e.key==="Escape"){ if(!$("#aiModal").hidden) closeAiSettings(); if(!$("#aiResult").hidden) closeAiResult(); }
+    });
+    document.addEventListener("click",function(e){
+      var b=e.target.closest && e.target.closest("[data-ai]"); if(!b) return;
+      e.preventDefault(); e.stopPropagation();
+      var pl=findPlace(b.getAttribute("data-ai")); if(pl) openAiResult(pl);
+    });
+  }
+
   /* ============ restore prefs then start ============ */
   function boot(){
     bind(); initMap();
@@ -1215,12 +1384,13 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       map.setView([hp.lat,hp.lon],17,{animate:false});
       setTimeout(landingFallback,4500);
     }
-    Promise.all([safeStorage.get("theme"),safeStorage.get("fs"),safeStorage.get("lang"),safeStorage.get("favs")])
+    Promise.all([safeStorage.get("theme"),safeStorage.get("fs"),safeStorage.get("lang"),safeStorage.get("favs"),safeStorage.get("ai")])
     .then(function(v){
       if(v[0]) applyTheme(v[0]);
       if(typeof v[1]==="number"){ fsIdx=v[1]; applyFont(); }
       if(v[2]) applyLang(v[2]);
       if(v[3]) favSet=v[3];
+      if(v[4] && typeof v[4]==="object"){ aiCfg.provider=v[4].provider||"mistral"; aiCfg.key=v[4].key||""; }
     });
   }
 

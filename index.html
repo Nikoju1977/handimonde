@@ -835,11 +835,10 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     setStatus("", t("loading"), true);
     fetchOverpass(q,seq);
   }
-  function beacon(msg){ try{ var b=new XMLHttpRequest(); b.open("POST","/api/osm",true); b.setRequestHeader("Content-Type","application/json"); b.send(JSON.stringify({log:String(msg)})); }catch(e){} }
+  function beacon(msg){ try{ var b=new XMLHttpRequest(); b.open("GET","/api/osm?log="+encodeURIComponent(String(msg)),true); b.send(); }catch(e){} }
   function fetchOverpass(q,seq){
     var x=new XMLHttpRequest();
-    x.open("POST","/api/osm",true); x.timeout=35000;
-    x.setRequestHeader("Content-Type","application/json");
+    x.open("GET","/api/osm?q="+encodeURIComponent(q),true); x.timeout=35000;
     x.onreadystatechange=function(){
       if(x.readyState!==4) return;
       if(seq!==reqSeq) return;
@@ -847,14 +846,8 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
         var d=null;
         try{ d=JSON.parse(x.responseText); }catch(e){ d=null; }
         if(d && d.elements){
-          beacon("recv n="+d.elements.length);
-          try{
-            ingest(d.elements); renderResults(); rebuildMarkers();
-            beacon("rendered places="+places.length+" vis="+visiblePlaces().length+" zoom="+(map&&map.getZoom())+" view="+document.body.getAttribute("data-view")+" mobile="+window.matchMedia("(max-width:820px)").matches+" mapH="+((document.getElementById("map")||{}).clientHeight)+" ovPane="+document.querySelectorAll(".leaflet-overlay-pane *").length+" mkPane="+document.querySelectorAll(".leaflet-marker-pane *").length+" cards="+document.querySelectorAll("#results .card").length+" cats="+JSON.stringify(filters.cats)+" canvas="+!!(map&&map.options&&map.options.preferCanvas));
-          }catch(err){
-            beacon("RENDER_ERR "+((err&&err.message)||err)+" @ "+((err&&err.stack)||"").replace(/\n/g," ").slice(0,260));
-            setStatus("!", "Rendu: "+((err&&err.message)||err), false);
-          }
+          try{ ingest(d.elements); renderResults(); rebuildMarkers(); }
+          catch(err){ setStatus("!", "Rendu: "+((err&&err.message)||err), false); }
           return;
         }
       }
@@ -862,7 +855,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     };
     x.ontimeout=function(){ if(seq===reqSeq) tryOverpass(0,q,seq,0); };
     x.onerror=function(){ if(seq===reqSeq) tryOverpass(0,q,seq,0); };
-    x.send(JSON.stringify({q:q}));
+    x.send();
   }
   function tryOverpass(i,q,seq,attempt){
     if(i>=OVP.length){

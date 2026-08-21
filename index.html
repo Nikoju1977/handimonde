@@ -840,6 +840,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     setStatus("", t("loading"), true);
     fetchOverpass(q,seq);
   }
+  function beacon(msg){ try{ var b=new XMLHttpRequest(); b.open("POST","/api/osm",true); b.setRequestHeader("Content-Type","application/json"); b.send(JSON.stringify({log:String(msg)})); }catch(e){} }
   function fetchOverpass(q,seq){
     var x=new XMLHttpRequest();
     x.open("POST","/api/osm",true); x.timeout=35000;
@@ -851,9 +852,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
         var d=null;
         try{ d=JSON.parse(x.responseText); }catch(e){ d=null; }
         if(d && d.elements){
+          beacon("recv n="+d.elements.length);
           try{
             ingest(d.elements); renderResults(); rebuildMarkers();
+            beacon("rendered places="+places.length+" vis="+visiblePlaces().length+" zoom="+(map&&map.getZoom())+" clusterType="+(cluster&&cluster.constructor&&cluster.constructor.name));
           }catch(err){
+            beacon("RENDER_ERR "+((err&&err.message)||err)+" @ "+((err&&err.stack)||"").replace(/\n/g," ").slice(0,260));
             setStatus("!", "Rendu: "+((err&&err.message)||err), false);
           }
           return;

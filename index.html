@@ -803,7 +803,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
 
   /* ============ map init ============ */
   function initMap(){
-    map = L.map("map",{ zoomControl:true, worldCopyJump:true }).setView([47.2184,-1.5536],14); // Nantes (zone dense pour affichage immédiat)
+    map = L.map("map",{ zoomControl:true, worldCopyJump:true, preferCanvas:true, renderer:L.canvas({ padding:0.5 }) }).setView([47.2184,-1.5536],14); // Nantes (canvas = rendu robuste iOS/mobile)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
       maxZoom:19, attribution:'&copy; OpenStreetMap'
     }).addTo(map);
@@ -850,7 +850,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
           beacon("recv n="+d.elements.length);
           try{
             ingest(d.elements); renderResults(); rebuildMarkers();
-            beacon("rendered places="+places.length+" vis="+visiblePlaces().length+" zoom="+(map&&map.getZoom())+" view="+document.body.getAttribute("data-view")+" mobile="+window.matchMedia("(max-width:820px)").matches+" mapH="+((document.getElementById("map")||{}).clientHeight)+" ovPane="+document.querySelectorAll(".leaflet-overlay-pane *").length+" mkPane="+document.querySelectorAll(".leaflet-marker-pane *").length+" cards="+document.querySelectorAll("#results .card").length+" cats="+JSON.stringify(filters.cats));
+            beacon("rendered places="+places.length+" vis="+visiblePlaces().length+" zoom="+(map&&map.getZoom())+" view="+document.body.getAttribute("data-view")+" mobile="+window.matchMedia("(max-width:820px)").matches+" mapH="+((document.getElementById("map")||{}).clientHeight)+" ovPane="+document.querySelectorAll(".leaflet-overlay-pane *").length+" mkPane="+document.querySelectorAll(".leaflet-marker-pane *").length+" cards="+document.querySelectorAll("#results .card").length+" cats="+JSON.stringify(filters.cats)+" canvas="+!!(map&&map.options&&map.options.preferCanvas));
           }catch(err){
             beacon("RENDER_ERR "+((err&&err.message)||err)+" @ "+((err&&err.stack)||"").replace(/\n/g," ").slice(0,260));
             setStatus("!", "Rendu: "+((err&&err.message)||err), false);

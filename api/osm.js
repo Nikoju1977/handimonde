@@ -118,9 +118,15 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
 
-  let q = "";
-  try { const b = await readBody(req); q = (b && b.q) || ""; }
+  let body = {};
+  try { body = await readBody(req); }
   catch (e) { res.status(400).json({ error: "bad json" }); return; }
+  if (body && typeof body.log === "string") {
+    console.log("[client] " + body.log.slice(0, 500));
+    res.status(200).json({ ok: true });
+    return;
+  }
+  const q = (body && body.q) || "";
   if (!q || q.length > 2000) { res.status(400).json({ error: "bad query" }); return; }
 
   const out = await queryMirrors(q);

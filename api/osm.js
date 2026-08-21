@@ -84,6 +84,30 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") { res.status(204).end(); return; }
 
+  if (req.method === "GET" && req.query && req.query.debug) {
+    const report = [];
+    for (const url of MIRRORS) {
+      const attempts = [];
+      const ok = await hit(url, SELFTEST_Q, attempts);
+      if (ok) {
+        const e0 = ok.data.elements[0] || null;
+        report.push({
+          mirror: url,
+          count: ok.data.elements.length,
+          firstType: e0 ? e0.type : null,
+          hasTags: !!(e0 && e0.tags),
+          hasWheelchair: !!(e0 && e0.tags && e0.tags.wheelchair),
+          hasLatLon: !!(e0 && (e0.lat != null || (e0.center && e0.center.lat != null))),
+          sampleKeys: e0 && e0.tags ? Object.keys(e0.tags).slice(0, 8) : []
+        });
+      } else {
+        report.push({ mirror: url, error: attempts[0] || "fail" });
+      }
+    }
+    res.status(200).json({ report });
+    return;
+  }
+
   if (req.method === "GET" && req.query && req.query.selftest) {
     const out = await queryMirrors(SELFTEST_Q);
     res.status(out.ok ? 200 : 502).json(

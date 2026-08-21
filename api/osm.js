@@ -1,15 +1,22 @@
 // HandiMonde — proxy Overpass same-origin (Vercel Serverless, Node).
-// GET /api/osm?selftest=1 lance une requete Nantes et renvoie le compte (diagnostic).
+// 5 backends distincts (4 continents) + double passe. Les instances publiques
+// Overpass saturent souvent (2026) ; la redondance evite l'ecran vide.
+// Diagnostic : GET /api/osm?selftest=1 renvoie le compte + le detail des tentatives.
+
+export const maxDuration = 60;
 
 const MIRRORS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
-  "https://api.openstreetmap.fr/oapi/interpreter"
+  "https://overpass.osm.ch/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+  "https://overpass.osm.jp/api/interpreter"
 ];
 
 const SELFTEST_Q =
   '[out:json][timeout:25];nwr["wheelchair"~"^(yes|limited)$"](47.20,-1.58,47.23,-1.54);out center tags 60;';
+
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 async function readBody(req) {
   if (req.body !== undefined && req.body !== null) {
@@ -23,31 +30,40 @@ async function readBody(req) {
   });
 }
 
+async function hit(url, q, attempts) {
+  try {
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 9000);
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+        "User-Agent": "HandiMonde/1.0 (accessibility map; github.com/Nikoju1977/handimonde)"
+      },
+      body: "data=" + encodeURIComponent(q),
+      signal: ctrl.signal
+    });
+    clearTimeout(to);
+    if (!r.ok) { attempts.push(url + " -> HTTP " + r.status); return null; }
+    const text = await r.text();
+    let data; try { data = JSON.parse(text); } catch (e) { attempts.push(url + " -> bad JSON"); return null; }
+    if (!data || !Array.isArray(data.elements)) { attempts.push(url + " -> no elements"); return null; }
+    return { mirror: url, data };
+  } catch (e) {
+    attempts.push(url + " -> " + (e && e.name === "AbortError" ? "timeout" : "error"));
+    return null;
+  }
+}
+
 async function queryMirrors(q) {
   const attempts = [];
-  for (const url of MIRRORS) {
-    try {
-      const ctrl = new AbortController();
-      const to = setTimeout(() => ctrl.abort(), 30000);
-      const r = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Accept": "application/json",
-          "User-Agent": "HandiMonde/1.0 (accessibility map; github.com/Nikoju1977/handimonde)"
-        },
-        body: "data=" + encodeURIComponent(q),
-        signal: ctrl.signal
-      });
-      clearTimeout(to);
-      if (!r.ok) { attempts.push(url + " -> HTTP " + r.status); continue; }
-      const text = await r.text();
-      let data; try { data = JSON.parse(text); } catch (e) { attempts.push(url + " -> bad JSON"); continue; }
-      if (!data || !Array.isArray(data.elements)) { attempts.push(url + " -> no elements"); continue; }
-      return { ok: true, mirror: url, data, attempts };
-    } catch (e) {
-      attempts.push(url + " -> " + (e && e.name === "AbortError" ? "timeout" : "error"));
+  for (let pass = 0; pass < 2; pass++) {
+    for (const url of MIRRORS) {
+      const ok = await hit(url, q, attempts);
+      if (ok) return { ok: true, mirror: ok.mirror, data: ok.data, attempts };
     }
+    if (pass === 0) await sleep(1200);
   }
   return { ok: false, attempts };
 }
@@ -60,11 +76,9 @@ export default async function handler(req, res) {
 
   if (req.method === "GET" && req.query && req.query.selftest) {
     const out = await queryMirrors(SELFTEST_Q);
-    if (out.ok) {
-      res.status(200).json({ ok: true, mirror: out.mirror, count: out.data.elements.length, attempts: out.attempts });
-    } else {
-      res.status(502).json({ ok: false, count: 0, attempts: out.attempts });
-    }
+    res.status(out.ok ? 200 : 502).json(
+      out.ok ? { ok: true, mirror: out.mirror, count: out.data.elements.length, attempts: out.attempts }
+             : { ok: false, count: 0, attempts: out.attempts });
     return;
   }
 
@@ -78,7 +92,7 @@ export default async function handler(req, res) {
   const out = await queryMirrors(q);
   if (out.ok) {
     console.log("[osm] OK " + out.mirror + " n=" + out.data.elements.length);
-    res.setHeader("Cache-Control", "public, s-maxage=120, stale-while-revalidate=300");
+    res.setHeader("Cache-Control", "public, s-maxage=180, stale-while-revalidate=600");
     res.status(200).json(out.data);
   } else {
     console.log("[osm] FAIL " + JSON.stringify(out.attempts));

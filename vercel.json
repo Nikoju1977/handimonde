@@ -9,6 +9,10 @@
     {
       "source": "/assist",
       "destination": "/api/ai"
+    },
+    {
+      "source": "/find",
+      "destination": "/api/geo"
     }
   ],
   "headers": [

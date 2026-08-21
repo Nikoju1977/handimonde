@@ -2,19 +2,59 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/places", "destination": "/api/osm" },
-    { "source": "/assist", "destination": "/api/ai" }
+    {
+      "source": "/places",
+      "destination": "/api/osm"
+    },
+    {
+      "source": "/assist",
+      "destination": "/api/ai"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "geolocation=(self), clipboard-write=(self)" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(self), clipboard-write=(self)"
+        }
       ]
     },
-    { "source": "/", "headers": [ { "key": "Cache-Control", "value": "no-store, must-revalidate" } ] },
-    { "source": "/index.html", "headers": [ { "key": "Cache-Control", "value": "no-store, must-revalidate" } ] }
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/app.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, must-revalidate"
+        }
+      ]
+    }
   ]
 }

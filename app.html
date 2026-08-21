@@ -422,8 +422,15 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
         </button>
       </div>
 
-      <button class="iconbtn" id="langBtn" aria-label="Changer de langue (FR / EN)" title="FR / EN"
-        style="border:1px solid var(--line);background:var(--panel);min-width:52px;font-family:'JetBrains Mono',monospace">FR</button>
+      <select id="langSel" aria-label="Langue / Language" style="border:1px solid var(--line);background:var(--panel);color:var(--ink);height:40px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:0 6px;cursor:pointer">
+        <option value="fr">FR — Français</option>
+        <option value="en">EN — English</option>
+        <option value="es">ES — Español</option>
+        <option value="de">DE — Deutsch</option>
+        <option value="it">IT — Italiano</option>
+        <option value="pt">PT — Português</option>
+        <option value="ar">AR — العربية</option>
+      </select>
       <button class="iconbtn" id="aiBtn" aria-label="Paramètres IA" title="IA" style="border:1px solid var(--line);background:var(--panel)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4L12 3Z"/><path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8L18 14Z"/></svg>
       </button>
@@ -673,10 +680,85 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       aiSettings:"AI settings", aiProvider:"Provider", aiKey:"API key", aiKeyPh:"Paste your key…", aiSave:"Save", aiClear:"Clear key",
       aiNoKey:"Add a free API key to enable AI summaries.", aiSaved:"Key saved", aiCleared:"Key cleared",
       aiDisclaimer:"AI-generated summary from OpenStreetMap data. Verify on site.", aiGetKey:"Get a free key"
+    },
+    es:{
+      skip:"Ir a los resultados", tagline:"Lugares accesibles · datos abiertos", searchPh:"Ciudad, dirección, barrio…", go:"Ir", nearme:"Cerca de mí", contribute:"Contribuir",
+      accessLevel:"Nivel de acceso", lvlYes:"Accesible", lvlLimited:"Parcial", features:"Equipamiento", fToilets:"Aseos PMR", fTactile:"Pavimento táctil", fHearing:"Bucle magnético", fBraille:"Braille",
+      category:"Tipo de lugar", cFood:"Restauración", cToilets:"Aseos", cTransport:"Transporte", cShop:"Comercios", cCulture:"Cultura", cHealth:"Salud", cLodging:"Alojamiento", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubes",
+      cEducation:"Educación", cSport:"Deporte", cPark:"Parques", cPublic:"Servicios", cWorship:"Culto", cParking:"Parking", cFav:"★ Favoritos",
+      legend:"Leyenda", vMap:"Mapa", vList:"Lista", loading:"Buscando lugares…", searching:"Localizando…", results:"lugar(es) accesible(s)",
+      none:"Nada por aquí", noneDesc:"No hay lugares accesibles en esta zona. Prueba otra ciudad o amplía los filtros.",
+      errNet:"Servidor ocupado, reinténtalo", errNetDesc:"Los servidores están saturados o no disponibles. Inténtalo en un momento.", retry:"Reintentar",
+      noPlace:"Lugar no encontrado", openOsm:"Ver en OpenStreetMap", goThere:"Cómo llegar", score:"Puntuación de acceso",
+      statusYes:"Acceso silla de ruedas", statusLimited:"Acceso parcial", fav:"Favorito", favAdd:"Añadir a favoritos",
+      accToilet:"Aseos PMR", tactile:"Pavimento táctil", hearing:"Bucle magnético", braille:"Braille",
+      minScore:"Puntuación mínima", share:"Compartir", sharePlace:"Compartir este lugar", ai:"IA", aiSummary:"Resumen de accesibilidad (IA)",
+      statPlaces:"lugares en esta zona", statAvg:"puntuación media", statGrade:"Nota", filteredNone:"lugares aquí, pero ninguno coincide con tus filtros", resetFilters:"Restablecer filtros",
+      cats:{food:"Restauración",toilets:"Aseos",transport:"Transporte",shop:"Comercio",culture:"Cultura",health:"Salud",lodging:"Alojamiento",spa:"Spa",sauna:"Sauna",club:"Club",education:"Educación",worship:"Culto",sport:"Deporte",park:"Parque",public:"Servicio público",parking:"Parking",other:"Lugar"}
+    },
+    de:{
+      skip:"Zu den Ergebnissen", tagline:"Barrierefreie Orte · offene Daten", searchPh:"Stadt, Adresse, Viertel…", go:"Los", nearme:"In meiner Nähe", contribute:"Beitragen",
+      accessLevel:"Zugänglichkeit", lvlYes:"Barrierefrei", lvlLimited:"Teilweise", features:"Ausstattung", fToilets:"Barrierefreies WC", fTactile:"Bodenleitsystem", fHearing:"Höranlage", fBraille:"Braille",
+      category:"Art des Ortes", cFood:"Gastronomie", cToilets:"Toiletten", cTransport:"Verkehr", cShop:"Geschäfte", cCulture:"Kultur", cHealth:"Gesundheit", cLodging:"Unterkunft", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubs",
+      cEducation:"Bildung", cSport:"Sport", cPark:"Parks", cPublic:"Ämter", cWorship:"Kultstätte", cParking:"Parkplatz", cFav:"★ Favoriten",
+      legend:"Legende", vMap:"Karte", vList:"Liste", loading:"Orte werden gesucht…", searching:"Standortsuche…", results:"barrierefreie(r) Ort(e)",
+      none:"Nichts hier", noneDesc:"Keine barrierefreien Orte in diesem Bereich. Versuche eine andere Stadt oder erweitere die Filter.",
+      errNet:"Server ausgelastet, erneut versuchen", errNetDesc:"Die Server sind überlastet oder nicht erreichbar. Bitte gleich erneut versuchen.", retry:"Erneut",
+      noPlace:"Ort nicht gefunden", openOsm:"Auf OpenStreetMap ansehen", goThere:"Route", score:"Zugänglichkeits-Score",
+      statusYes:"Rollstuhlzugang", statusLimited:"Teilweiser Zugang", fav:"Favorit", favAdd:"Zu Favoriten",
+      accToilet:"Barrierefreies WC", tactile:"Bodenleitsystem", hearing:"Höranlage", braille:"Braille",
+      minScore:"Mindestbewertung", share:"Teilen", sharePlace:"Diesen Ort teilen", ai:"KI", aiSummary:"Barrierefreiheits-Zusammenfassung (KI)",
+      statPlaces:"Orte in diesem Bereich", statAvg:"Durchschnitt", statGrade:"Note", filteredNone:"Orte hier, aber keiner passt zu deinen Filtern", resetFilters:"Filter zurücksetzen",
+      cats:{food:"Gastronomie",toilets:"Toiletten",transport:"Verkehr",shop:"Geschäft",culture:"Kultur",health:"Gesundheit",lodging:"Unterkunft",spa:"Spa",sauna:"Sauna",club:"Club",education:"Bildung",worship:"Kultstätte",sport:"Sport",park:"Park",public:"Amt",parking:"Parkplatz",other:"Ort"}
+    },
+    it:{
+      skip:"Vai ai risultati", tagline:"Luoghi accessibili · dati aperti", searchPh:"Città, indirizzo, quartiere…", go:"Vai", nearme:"Vicino a me", contribute:"Contribuisci",
+      accessLevel:"Livello di accesso", lvlYes:"Accessibile", lvlLimited:"Parziale", features:"Servizi", fToilets:"Bagni accessibili", fTactile:"Percorsi tattili", fHearing:"Anello magnetico", fBraille:"Braille",
+      category:"Tipo di luogo", cFood:"Ristorazione", cToilets:"Bagni", cTransport:"Trasporti", cShop:"Negozi", cCulture:"Cultura", cHealth:"Salute", cLodging:"Alloggi", cSpa:"Spa", cSauna:"Sauna", cClub:"Locali",
+      cEducation:"Istruzione", cSport:"Sport", cPark:"Parchi", cPublic:"Servizi", cWorship:"Culto", cParking:"Parcheggio", cFav:"★ Preferiti",
+      legend:"Legenda", vMap:"Mappa", vList:"Elenco", loading:"Ricerca luoghi…", searching:"Localizzazione…", results:"luogo/luoghi accessibile/i",
+      none:"Niente qui", noneDesc:"Nessun luogo accessibile in questa zona. Prova un'altra città o allarga i filtri.",
+      errNet:"Server occupato, riprova", errNetDesc:"I server sono saturi o non disponibili. Riprova tra poco.", retry:"Riprova",
+      noPlace:"Luogo non trovato", openOsm:"Apri su OpenStreetMap", goThere:"Indicazioni", score:"Punteggio di accesso",
+      statusYes:"Accesso sedia a rotelle", statusLimited:"Accesso parziale", fav:"Preferito", favAdd:"Aggiungi ai preferiti",
+      accToilet:"Bagni accessibili", tactile:"Percorsi tattili", hearing:"Anello magnetico", braille:"Braille",
+      minScore:"Punteggio minimo", share:"Condividi", sharePlace:"Condividi questo luogo", ai:"IA", aiSummary:"Riepilogo accessibilità (IA)",
+      statPlaces:"luoghi in questa zona", statAvg:"punteggio medio", statGrade:"Voto", filteredNone:"luoghi qui, ma nessuno corrisponde ai filtri", resetFilters:"Reimposta filtri",
+      cats:{food:"Ristorazione",toilets:"Bagni",transport:"Trasporti",shop:"Negozio",culture:"Cultura",health:"Salute",lodging:"Alloggio",spa:"Spa",sauna:"Sauna",club:"Locale",education:"Istruzione",worship:"Culto",sport:"Sport",park:"Parco",public:"Servizio pubblico",parking:"Parcheggio",other:"Luogo"}
+    },
+    pt:{
+      skip:"Ir para os resultados", tagline:"Locais acessíveis · dados abertos", searchPh:"Cidade, endereço, bairro…", go:"Ir", nearme:"Perto de mim", contribute:"Contribuir",
+      accessLevel:"Nível de acesso", lvlYes:"Acessível", lvlLimited:"Parcial", features:"Equipamentos", fToilets:"WC acessível", fTactile:"Piso tátil", fHearing:"Anel magnético", fBraille:"Braille",
+      category:"Tipo de local", cFood:"Restauração", cToilets:"WC", cTransport:"Transporte", cShop:"Lojas", cCulture:"Cultura", cHealth:"Saúde", cLodging:"Alojamento", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubes",
+      cEducation:"Educação", cSport:"Desporto", cPark:"Parques", cPublic:"Serviços", cWorship:"Culto", cParking:"Estacionamento", cFav:"★ Favoritos",
+      legend:"Legenda", vMap:"Mapa", vList:"Lista", loading:"A procurar locais…", searching:"A localizar…", results:"local(is) acessível(is)",
+      none:"Nada aqui", noneDesc:"Não há locais acessíveis nesta zona. Tente outra cidade ou alargue os filtros.",
+      errNet:"Servidor ocupado, tente de novo", errNetDesc:"Os servidores estão sobrecarregados ou indisponíveis. Tente daqui a pouco.", retry:"Repetir",
+      noPlace:"Local não encontrado", openOsm:"Ver no OpenStreetMap", goThere:"Como chegar", score:"Pontuação de acesso",
+      statusYes:"Acesso cadeira de rodas", statusLimited:"Acesso parcial", fav:"Favorito", favAdd:"Adicionar aos favoritos",
+      accToilet:"WC acessível", tactile:"Piso tátil", hearing:"Anel magnético", braille:"Braille",
+      minScore:"Pontuação mínima", share:"Partilhar", sharePlace:"Partilhar este local", ai:"IA", aiSummary:"Resumo de acessibilidade (IA)",
+      statPlaces:"locais nesta zona", statAvg:"pontuação média", statGrade:"Nota", filteredNone:"locais aqui, mas nenhum corresponde aos filtros", resetFilters:"Repor filtros",
+      cats:{food:"Restauração",toilets:"WC",transport:"Transporte",shop:"Loja",culture:"Cultura",health:"Saúde",lodging:"Alojamento",spa:"Spa",sauna:"Sauna",club:"Clube",education:"Educação",worship:"Culto",sport:"Desporto",park:"Parque",public:"Serviço público",parking:"Estacionamento",other:"Local"}
+    },
+    ar:{
+      skip:"الذهاب إلى النتائج", tagline:"أماكن يسهل الوصول إليها · بيانات مفتوحة", searchPh:"مدينة، عنوان، حي…", go:"اذهب", nearme:"بالقرب مني", contribute:"المساهمة",
+      accessLevel:"مستوى الوصول", lvlYes:"يسهل الوصول", lvlLimited:"جزئي", features:"التجهيزات", fToilets:"مرحاض مهيأ", fTactile:"مسار لمسي", fHearing:"حلقة سمعية", fBraille:"برايل",
+      category:"نوع المكان", cFood:"مطاعم", cToilets:"مراحيض", cTransport:"نقل", cShop:"متاجر", cCulture:"ثقافة", cHealth:"صحة", cLodging:"إقامة", cSpa:"سبا", cSauna:"ساونا", cClub:"نوادٍ",
+      cEducation:"تعليم", cSport:"رياضة", cPark:"حدائق", cPublic:"خدمات", cWorship:"دور عبادة", cParking:"مواقف", cFav:"★ المفضلة",
+      legend:"مفتاح", vMap:"خريطة", vList:"قائمة", loading:"جارٍ البحث…", searching:"تحديد الموقع…", results:"أماكن يسهل الوصول إليها",
+      none:"لا شيء هنا", noneDesc:"لا توجد أماكن يسهل الوصول إليها في هذه المنطقة. جرّب مدينة أخرى أو وسّع عوامل التصفية.",
+      errNet:"الخادم مشغول، أعد المحاولة", errNetDesc:"الخوادم مثقلة أو غير متاحة حاليًا. أعد المحاولة بعد قليل.", retry:"إعادة",
+      noPlace:"المكان غير موجود", openOsm:"عرض على OpenStreetMap", goThere:"الاتجاهات", score:"درجة الوصول",
+      statusYes:"وصول كرسي متحرك", statusLimited:"وصول جزئي", fav:"مفضل", favAdd:"إضافة إلى المفضلة",
+      accToilet:"مرحاض مهيأ", tactile:"مسار لمسي", hearing:"حلقة سمعية", braille:"برايل",
+      minScore:"أدنى تقييم", share:"مشاركة", sharePlace:"مشاركة هذا المكان", ai:"ذكاء", aiSummary:"ملخص إمكانية الوصول (ذكاء اصطناعي)",
+      statPlaces:"أماكن في هذه المنطقة", statAvg:"المعدل", statGrade:"تقدير", filteredNone:"أماكن هنا، لكن لا شيء يطابق عوامل التصفية", resetFilters:"إعادة ضبط عوامل التصفية",
+      cats:{food:"مطاعم",toilets:"مراحيض",transport:"نقل",shop:"متجر",culture:"ثقافة",health:"صحة",lodging:"إقامة",spa:"سبا",sauna:"ساونا",club:"نادٍ",education:"تعليم",worship:"دار عبادة",sport:"رياضة",park:"حديقة",public:"خدمة عامة",parking:"موقف",other:"مكان"}
     }
   };
   var lang = "fr";
-  function t(k){ return I18N[lang][k]; }
+  function t(k){ return (I18N[lang]&&I18N[lang][k])||I18N.en[k]||I18N.fr[k]; }
 
   /* ============ safeStorage (IndexedDB + in-memory fallback) ============ */
   var safeStorage = (function(){
@@ -1215,11 +1297,14 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   var FS=[100,115,130,145]; var fsIdx=0;
   function applyFont(){ document.documentElement.style.setProperty("--fs-root",FS[fsIdx]+"%"); safeStorage.set("fs",fsIdx); if(map) setTimeout(function(){map.invalidateSize();},50); }
   function applyLang(l){
-    lang=l; document.documentElement.setAttribute("lang",l);
-    $("#langBtn").textContent = l.toUpperCase();
-    $all("[data-i18n]").forEach(function(el){ var k=el.getAttribute("data-i18n"); if(I18N[l][k]) el.textContent=I18N[l][k]; });
-    $all("[data-i18n-ph]").forEach(function(el){ var k=el.getAttribute("data-i18n-ph"); if(I18N[l][k]) el.setAttribute("placeholder",I18N[l][k]); });
-    $all("[data-i18n-al]").forEach(function(el){ var k=el.getAttribute("data-i18n-al"); if(I18N[l][k]) el.setAttribute("aria-label",I18N[l][k]); });
+    lang=l;
+    document.documentElement.setAttribute("lang",l);
+    document.documentElement.dir = (l==="ar" ? "rtl" : "ltr");
+    var ls=$("#langSel"); if(ls) ls.value=l;
+    function tr(k){ return (I18N[l]&&I18N[l][k])||I18N.en[k]||I18N.fr[k]; }
+    $all("[data-i18n]").forEach(function(el){ var v=tr(el.getAttribute("data-i18n")); if(v) el.textContent=v; });
+    $all("[data-i18n-ph]").forEach(function(el){ var v=tr(el.getAttribute("data-i18n-ph")); if(v) el.setAttribute("placeholder",v); });
+    $all("[data-i18n-al]").forEach(function(el){ var v=tr(el.getAttribute("data-i18n-al")); if(v) el.setAttribute("aria-label",v); });
     safeStorage.set("lang",l);
     renderResults();
   }
@@ -1239,7 +1324,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     $("#fsUp").addEventListener("click",function(){ if(fsIdx<FS.length-1){ fsIdx++; applyFont(); } });
     $("#fsDown").addEventListener("click",function(){ if(fsIdx>0){ fsIdx--; applyFont(); } });
     $all("[data-theme-btn]").forEach(function(b){ b.addEventListener("click",function(){ applyTheme(b.getAttribute("data-theme-btn")); }); });
-    $("#langBtn").addEventListener("click",function(){ applyLang(lang==="fr"?"en":"fr"); });
+    $("#langSel").addEventListener("change",function(){ applyLang(this.value); });
     $("#minScore").addEventListener("input",function(){
       filters.minScore=parseInt(this.value,10);
       var lab=filters.minScore+" / 5";

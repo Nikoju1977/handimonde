@@ -422,7 +422,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
 
       <button class="iconbtn" id="langBtn" aria-label="Changer de langue (FR / EN)" title="FR / EN"
         style="border:1px solid var(--line);background:var(--panel);min-width:52px;font-family:'JetBrains Mono',monospace">FR</button>
-      <button class="iconbtn" id="aiBtn" aria-label="Param\u00e8tres IA" title="IA" style="border:1px solid var(--line);background:var(--panel)">
+      <button class="iconbtn" id="aiBtn" aria-label="Paramètres IA" title="IA" style="border:1px solid var(--line);background:var(--panel)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4L12 3Z"/><path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8L18 14Z"/></svg>
       </button>
     </div>
@@ -482,7 +482,13 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
               <button type="button" class="chip" data-cat="spa" aria-pressed="false" data-i18n="cSpa">Spa</button>
               <button type="button" class="chip" data-cat="sauna" aria-pressed="false" data-i18n="cSauna">Sauna</button>
               <button type="button" class="chip" data-cat="club" aria-pressed="false" data-i18n="cClub">Clubs</button>
-              <button type="button" class="chip" data-cat="fav" aria-pressed="false" data-i18n="cFav">\u2605 Favoris</button>
+              <button type="button" class="chip" data-cat="education" aria-pressed="false" data-i18n="cEducation">Éducation</button>
+              <button type="button" class="chip" data-cat="sport" aria-pressed="false" data-i18n="cSport">Sport</button>
+              <button type="button" class="chip" data-cat="park" aria-pressed="false" data-i18n="cPark">Parcs</button>
+              <button type="button" class="chip" data-cat="public" aria-pressed="false" data-i18n="cPublic">Services</button>
+              <button type="button" class="chip" data-cat="worship" aria-pressed="false" data-i18n="cWorship">Culte</button>
+              <button type="button" class="chip" data-cat="parking" aria-pressed="false" data-i18n="cParking">Parking</button>
+              <button type="button" class="chip" data-cat="fav" aria-pressed="false" data-i18n="cFav">★ Favoris</button>
             </div>
           </fieldset>
         </div>
@@ -559,22 +565,22 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   <div class="modal" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle" hidden>
     <div class="modal__box" id="aiModalBox">
       <div class="modal__head">
-        <h2 id="aiModalTitle" data-i18n="aiSettings">Param\u00e8tres IA</h2>
+        <h2 id="aiModalTitle" data-i18n="aiSettings">Paramètres IA</h2>
         <button class="modal__x" id="aiClose" type="button" aria-label="Fermer" data-i18n-al="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
-      <p class="modal__hint" data-i18n="aiNoKey">Ajoutez une cl\u00e9 API gratuite pour activer les r\u00e9sum\u00e9s IA.</p>
+      <p class="modal__hint" data-i18n="aiNoKey">Ajoutez une clé API gratuite pour activer les résumés IA.</p>
       <label class="flabel" for="aiProvider" data-i18n="aiProvider">Fournisseur</label>
       <select class="finput" id="aiProvider">
-        <option value="mistral">Mistral \u2014 1B tokens/mois gratuit</option>
-        <option value="groq">Groq \u2014 Llama 3.3 70B, gratuit</option>
-        <option value="cerebras">Cerebras \u2014 1M tokens/jour gratuit</option>
-        <option value="gemini">Google Gemini Flash \u2014 gratuit</option>
+        <option value="mistral">Mistral — 1B tokens/mois gratuit</option>
+        <option value="groq">Groq — Llama 3.3 70B, gratuit</option>
+        <option value="cerebras">Cerebras — 1M tokens/jour gratuit</option>
+        <option value="gemini">Google Gemini Flash — gratuit</option>
       </select>
-      <label class="flabel" for="aiKey" data-i18n="aiKey">Cl\u00e9 API</label>
-      <input class="finput" id="aiKey" type="password" autocomplete="off" spellcheck="false" data-i18n-ph="aiKeyPh" placeholder="Collez votre cl\u00e9\u2026">
-      <a class="pop__link" id="aiGetKey" href="#" target="_blank" rel="noopener" style="margin-top:10px;display:inline-flex" data-i18n="aiGetKey">Obtenir une cl\u00e9 gratuite</a>
+      <label class="flabel" for="aiKey" data-i18n="aiKey">Clé API</label>
+      <input class="finput" id="aiKey" type="password" autocomplete="off" spellcheck="false" data-i18n-ph="aiKeyPh" placeholder="Collez votre clé…">
+      <a class="pop__link" id="aiGetKey" href="#" target="_blank" rel="noopener" style="margin-top:10px;display:inline-flex" data-i18n="aiGetKey">Obtenir une clé gratuite</a>
       <div class="modal__foot">
-        <button class="btn btn--ghost" type="button" id="aiClear" data-i18n="aiClear">Effacer la cl\u00e9</button>
+        <button class="btn btn--ghost" type="button" id="aiClear" data-i18n="aiClear">Effacer la clé</button>
         <button class="btn btn--accent" type="button" id="aiSave" data-i18n="aiSave">Enregistrer</button>
       </div>
     </div>
@@ -582,12 +588,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   <div class="modal" id="aiResult" role="dialog" aria-modal="true" aria-labelledby="aiResultTitle" hidden>
     <div class="modal__box" id="aiResultBox">
       <div class="modal__head">
-        <h2 id="aiResultTitle" data-i18n="aiSummary">R\u00e9sum\u00e9 accessibilit\u00e9 (IA)</h2>
+        <h2 id="aiResultTitle" data-i18n="aiSummary">Résumé accessibilité (IA)</h2>
         <button class="modal__x" id="aiResultClose" type="button" aria-label="Fermer" data-i18n-al="close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <p id="aiResultName" style="font-family:'Lexend',sans-serif;font-weight:700;margin:0 0 8px"></p>
       <div id="aiResultBody" aria-live="polite"></div>
-      <p class="modal__hint" style="margin-top:14px" data-i18n="aiDisclaimer">R\u00e9sum\u00e9 g\u00e9n\u00e9r\u00e9 par IA \u00e0 partir des donn\u00e9es OpenStreetMap. \u00c0 v\u00e9rifier sur place.</p>
+      <p class="modal__hint" style="margin-top:14px" data-i18n="aiDisclaimer">Résumé généré par IA à partir des données OpenStreetMap. À vérifier sur place.</p>
     </div>
   </div>
 
@@ -610,14 +616,14 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       accessLevel:"Niveau d'accès", lvlYes:"Accessible", lvlLimited:"Partiel",
       features:"Équipements", fToilets:"Toilettes PMR", fTactile:"Podotactile", fHearing:"Boucle magnétique", fBraille:"Braille",
       category:"Type de lieu", cFood:"Restauration", cToilets:"Toilettes", cTransport:"Transport", cShop:"Commerces",
-      cCulture:"Culture", cHealth:"Santé", cLodging:"Hébergement", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubs", cFav:"★ Favoris",
+      cCulture:"Culture", cHealth:"Santé", cLodging:"Hébergement", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubs", cEducation:"Éducation", cSport:"Sport", cPark:"Parcs", cPublic:"Services", cWorship:"Culte", cParking:"Parking", cFav:"★ Favoris",
       legend:"Légende", vMap:"Carte", vList:"Liste",
       hintZoom:"Zoomez sur une ville pour voir les lieux", loading:"Recherche des lieux…",
       searching:"Localisation…", located:"Position trouvée", noGeo:"Géolocalisation indisponible",
       results:"lieu(x) accessible(s)", none:"Aucun lieu ici", noneDesc:"Aucun lieu accessible référencé dans cette zone. Essayez une autre ville, élargissez les filtres, ou contribuez sur OpenStreetMap.",
       zoomMore:"Zoomez encore", zoomMoreDesc:"Rapprochez-vous d'une ville pour charger les lieux accessibles.",
       errNet:"Serveur occupé, réessayez", noPlace:"Lieu introuvable, précisez la recherche",
-      openOsm:"Voir sur OpenStreetMap", cats:{food:"Restauration",toilets:"Toilettes",transport:"Transport",shop:"Commerce",culture:"Culture",health:"Santé",lodging:"Hébergement",spa:"Spa",sauna:"Sauna",club:"Club",other:"Lieu"},
+      openOsm:"Voir sur OpenStreetMap", cats:{food:"Restauration",toilets:"Toilettes",transport:"Transport",shop:"Commerce",culture:"Culture",health:"Santé",lodging:"Hébergement",spa:"Spa",sauna:"Sauna",club:"Club",education:"Éducation",worship:"Lieu de culte",sport:"Sport",park:"Parc",public:"Service public",parking:"Parking",other:"Lieu"},
       accToilet:"Toilettes PMR", tactile:"Bandes podotactiles", hearing:"Boucle magnétique", braille:"Braille",
       fav:"Favori", favAdd:"Ajouter aux favoris", statusYes:"Accès fauteuil", statusLimited:"Accès partiel",
       contribute:"Contribuer", addTitle:"Signaler un lieu accessible", addHint:"Touchez la carte à l'emplacement du lieu, puis décrivez-le",
@@ -641,14 +647,14 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       accessLevel:"Access level", lvlYes:"Accessible", lvlLimited:"Partial",
       features:"Facilities", fToilets:"Accessible WC", fTactile:"Tactile paving", fHearing:"Hearing loop", fBraille:"Braille",
       category:"Place type", cFood:"Food & drink", cToilets:"Toilets", cTransport:"Transport", cShop:"Shops",
-      cCulture:"Culture", cHealth:"Health", cLodging:"Lodging", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubs", cFav:"★ Favorites",
+      cCulture:"Culture", cHealth:"Health", cLodging:"Lodging", cSpa:"Spa", cSauna:"Sauna", cClub:"Clubs", cEducation:"Education", cSport:"Sport", cPark:"Parks", cPublic:"Services", cWorship:"Worship", cParking:"Parking", cFav:"★ Favorites",
       legend:"Legend", vMap:"Map", vList:"List",
       hintZoom:"Zoom into a city to see places", loading:"Finding places…",
       searching:"Locating…", located:"Location found", noGeo:"Location unavailable",
       results:"accessible place(s)", none:"Nothing here yet", noneDesc:"No accessible places mapped in this area. Try another city, widen filters, or contribute on OpenStreetMap.",
       zoomMore:"Zoom in more", zoomMoreDesc:"Move closer to a city to load accessible places.",
       errNet:"Server busy, try again", noPlace:"Place not found, refine your search",
-      openOsm:"View on OpenStreetMap", cats:{food:"Food",toilets:"Toilets",transport:"Transport",shop:"Shop",culture:"Culture",health:"Health",lodging:"Lodging",spa:"Spa",sauna:"Sauna",club:"Club",other:"Place"},
+      openOsm:"View on OpenStreetMap", cats:{food:"Food",toilets:"Toilets",transport:"Transport",shop:"Shop",culture:"Culture",health:"Health",lodging:"Lodging",spa:"Spa",sauna:"Sauna",club:"Club",education:"Education",worship:"Worship",sport:"Sport",park:"Park",public:"Public service",parking:"Parking",other:"Place"},
       accToilet:"Accessible WC", tactile:"Tactile paving", hearing:"Hearing loop", braille:"Braille",
       fav:"Favorite", favAdd:"Add to favorites", statusYes:"Wheelchair access", statusLimited:"Partial access",
       contribute:"Contribute", addTitle:"Report an accessible place", addHint:"Tap the map where the place is, then describe it",
@@ -736,6 +742,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     if(tg.leisure==="sauna" || tg.amenity==="sauna") return "sauna";
     if(tg.leisure==="spa" || tg.amenity==="spa" || tg.leisure==="hot_spring" || tg.shop==="massage") return "spa";
     if(tg.amenity==="nightclub" || tg.amenity==="social_club" || tg.club || tg.leisure==="dance") return "club";
+    if(["school","university","college","kindergarten","language_school","music_school","childcare"].indexOf(tg.amenity)>=0) return "education";
+    if(tg.amenity==="place_of_worship") return "worship";
+    if(["sports_centre","fitness_centre","stadium","swimming_pool","pitch","track","gym","horse_riding"].indexOf(tg.leisure)>=0 || tg.sport) return "sport";
+    if(["park","garden","playground","nature_reserve","dog_park"].indexOf(tg.leisure)>=0) return "park";
+    if(["townhall","courthouse","police","fire_station","post_office","social_facility","community_centre"].indexOf(tg.amenity)>=0 || tg.office==="government") return "public";
+    if(tg.amenity==="parking") return "parking";
     if(["restaurant","cafe","fast_food","bar","pub","food_court","ice_cream","biergarten"].indexOf(tg.amenity)>=0) return "food";
     if(["hospital","clinic","doctors","pharmacy","dentist"].indexOf(tg.amenity)>=0 || tg.healthcare) return "health";
     if(["theatre","cinema","library","arts_centre","community_centre"].indexOf(tg.amenity)>=0) return "culture";
@@ -830,12 +842,18 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     if(north-south > MAXLAT){ south=c.lat-MAXLAT/2; north=c.lat+MAXLAT/2; }
     if(east-west > MAXLON){ west=c.lng-MAXLON/2; east=c.lng+MAXLON/2; }
     var bbox=[south,west,north,east].map(function(n){return n.toFixed(5);}).join(",");
-    var q="[out:json][timeout:25];nwr[\"wheelchair\"~\"^(yes|limited)$\"]("+bbox+");out center tags 500;";
+    var q="[out:json][timeout:28];("
+      +"nwr[\"wheelchair\"~\"^(yes|limited|designated)$\"]("+bbox+");"
+      +"nwr[\"toilets:wheelchair\"=\"yes\"]("+bbox+");"
+      +"nwr[\"hearing_loop\"=\"yes\"]("+bbox+");"
+      +"nwr[\"induction_loop\"][\"induction_loop\"!=\"no\"]("+bbox+");"
+      +"nwr[\"braille\"=\"yes\"]("+bbox+");"
+      +"nwr[\"tactile_paving\"=\"yes\"][\"amenity\"]("+bbox+");"
+      +");out center tags 600;";
     var seq= ++reqSeq;
     setStatus("", t("loading"), true);
     fetchOverpass(q,seq);
   }
-  function beacon(msg){ try{ var b=new XMLHttpRequest(); b.open("GET","/places?log="+encodeURIComponent(String(msg)),true); b.send(); }catch(e){} }
   function fetchOverpass(q,seq){
     var x=new XMLHttpRequest();
     x.open("GET","/places?q="+encodeURIComponent(q),true); x.timeout=35000;
@@ -884,11 +902,12 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       var e=els[i], tg=e.tags||{};
       var lat = e.lat!=null?e.lat:(e.center&&e.center.lat), lon=e.lon!=null?e.lon:(e.center&&e.center.lon);
       if(lat==null||lon==null) continue;
-      var lvl = tg.wheelchair==="yes"?"yes":(tg.wheelchair==="limited"?"limited":null);
-      if(!lvl) continue;
+      var feats=featuresOf(tg);
+      var lvl = (tg.wheelchair==="yes"||tg.wheelchair==="designated")?"yes":(tg.wheelchair==="limited"?"limited":null);
+      if(!lvl){ if(feats.toilets||feats.tactile||feats.hearing||feats.braille){ lvl="limited"; } else { continue; } }
       var id=e.type[0]+e.id;
       if(seen[id]) continue; seen[id]=1;
-      var cat=categoryOf(tg), feats=featuresOf(tg);
+      var cat=categoryOf(tg);
       places.push({
         id:id, osmType:e.type, osmId:e.id, lat:lat, lon:lon, level:lvl, cat:cat,
         name:nameOf(tg,cat), sub:subtitleOf(tg,cat), feats:feats, score:scoreOf(lvl,feats),
@@ -990,7 +1009,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       vis.sort(function(a,b){ return (b.score-a.score) || (a.level===b.level?0:(a.level==="yes"?-1:1)); });
     }
     var html="";
-    for(var i=0;i<vis.length && i<300;i++){ html+=cardHTML(vis[i]); }
+    for(var i=0;i<vis.length && i<150;i++){ html+=cardHTML(vis[i]); }
     res.innerHTML=html;
     bindCards();
   }

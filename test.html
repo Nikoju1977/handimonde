@@ -11,7 +11,7 @@ function show(h){ out.innerHTML=h; }
 var Q='[out:json][timeout:25];nwr["wheelchair"~"^(yes|limited)$"](47.20,-1.58,47.23,-1.54);out center tags 60;';
 try{
   var x=new XMLHttpRequest();
-  x.open('GET','/api/osm?q='+encodeURIComponent(Q),true);
+  x.open('GET','/places?q='+encodeURIComponent(Q),true);
   x.timeout=35000;
   x.onreadystatechange=function(){
     if(x.readyState!==4) return;

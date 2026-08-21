@@ -1,3 +1,4 @@
+// © 2026 Studio Niko Design — Niko (Nicolas Julienne). Signature : Studio Niko Design · Août 2026.
 // HandiMonde — proxy Overpass same-origin (Vercel Serverless, Node).
 // Supporte GET (?q=...) ET POST {q}. Le GET est privilegie cote client car
 // certains navigateurs/reseaux mobiles bloquent ou figent les POST vers /api.

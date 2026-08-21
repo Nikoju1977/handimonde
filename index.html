@@ -838,7 +838,22 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     var q="[out:json][timeout:25];nwr[\"wheelchair\"~\"^(yes|limited)$\"]("+bbox+");out center tags 500;";
     var seq= ++reqSeq;
     setStatus("", t("loading"), true);
-    tryOverpass(0,q,seq,0);
+    fetchOverpass(q,seq);
+  }
+  function fetchOverpass(q,seq){
+    var x=new XMLHttpRequest();
+    x.open("POST","/api/osm",true); x.timeout=35000;
+    x.setRequestHeader("Content-Type","application/json");
+    x.onreadystatechange=function(){
+      if(x.readyState!==4) return;
+      if(x.status>=200 && x.status<300){
+        try{ var d=JSON.parse(x.responseText); if(d && d.elements){ if(seq!==reqSeq) return; ingest(d.elements); renderResults(); rebuildMarkers(); return; } }catch(e){}
+      }
+      tryOverpass(0,q,seq,0);
+    };
+    x.ontimeout=function(){ tryOverpass(0,q,seq,0); };
+    x.onerror=function(){ tryOverpass(0,q,seq,0); };
+    x.send(JSON.stringify({q:q}));
   }
   function tryOverpass(i,q,seq,attempt){
     if(i>=OVP.length){
@@ -1324,12 +1339,11 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     var sys=(lang==="fr")
       ? "Tu es un expert de l'accessibilite handicap. A partir UNIQUEMENT des donnees OpenStreetMap fournies en JSON, redige un resume concret et bienveillant de 3 a 4 phrases sur l'accessibilite de ce lieu pour une personne en situation de handicap (moteur, visuel, auditif). N'invente rien au-dela des donnees. Termine par un conseil pratique. Reponds en francais, sans markdown."
       : "You are a disability-accessibility expert. Using ONLY the provided OpenStreetMap data (JSON), write a concrete, kind 3-4 sentence summary of this venue's accessibility for a person with a disability (mobility, vision, hearing). Do not invent beyond the data. End with one practical tip. Reply in English, no markdown.";
-    var body=JSON.stringify({ model:pr.model, max_tokens:320, temperature:0.4,
+    var body=JSON.stringify({ provider:aiCfg.provider, key:aiCfg.key, model:pr.model, max_tokens:320, temperature:0.4,
       messages:[{role:"system",content:sys},{role:"user",content:aiPromptFor(p)}] });
     var x=new XMLHttpRequest();
-    x.open("POST",pr.url,true); x.timeout=45000;
+    x.open("POST","/api/ai",true); x.timeout=45000;
     x.setRequestHeader("Content-Type","application/json");
-    x.setRequestHeader("Authorization","Bearer "+aiCfg.key);
     x.onreadystatechange=function(){
       if(x.readyState!==4) return;
       if(x.status>=200 && x.status<300){

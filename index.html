@@ -269,6 +269,8 @@ legend{
 }
 .statsbar[hidden]{display:none}
 .statsbar .star{color:var(--limited)}
+.statsbar .grade{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; padding:0 6px; border-radius:7px; color:#fff; font-family:"Lexend",sans-serif; font-weight:700; font-size:.9rem; flex:0 0 auto; }
+.statsbar b{ color:var(--ink); }
 
 /* card directions + distance */
 .card__dist{font-family:"JetBrains Mono",monospace; font-weight:700; color:var(--brand-strong)}
@@ -634,7 +636,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Tri", sortScore:"Score", sortDist:"Distance", goThere:"Y aller", score:"Score d'accès",
       chkToilets:"Toilettes PMR", chkTactile:"Bandes podotactiles", chkHearing:"Boucle magnétique", chkBraille:"Braille", close:"Fermer",
       minScore:"Score minimum", share:"Partager", copied:"Lien copié dans le presse-papier", sharePlace:"Partager ce lieu",
-      statPlaces:"lieux dans cette zone", statAvg:"score moyen", filteredNone:"lieux ici, mais aucun ne correspond à tes filtres", resetFilters:"Réinitialiser les filtres",
+      statPlaces:"lieux dans cette zone", statAvg:"score moyen", statGrade:"Note", filteredNone:"lieux ici, mais aucun ne correspond à tes filtres", resetFilters:"Réinitialiser les filtres",
       errNetDesc:"Les serveurs de données sont saturés ou momentanément indisponibles. Réessayez dans un instant.", retry:"Réessayer",
       ai:"IA", aiSummary:"Résumé accessibilité (IA)", aiGenerating:"Génération du résumé…", aiError:"IA indisponible (vérifiez la clé ou réessayez).",
       aiSettings:"Paramètres IA", aiProvider:"Fournisseur", aiKey:"Clé API", aiKeyPh:"Collez votre clé…", aiSave:"Enregistrer", aiClear:"Effacer la clé",
@@ -665,7 +667,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Sort", sortScore:"Score", sortDist:"Distance", goThere:"Directions", score:"Access score",
       chkToilets:"Accessible WC", chkTactile:"Tactile paving", chkHearing:"Hearing loop", chkBraille:"Braille", close:"Close",
       minScore:"Minimum score", share:"Share", copied:"Link copied to clipboard", sharePlace:"Share this place",
-      statPlaces:"places in this area", statAvg:"average score", filteredNone:"places here, but none match your filters", resetFilters:"Reset filters",
+      statPlaces:"places in this area", statAvg:"average score", statGrade:"Grade", filteredNone:"places here, but none match your filters", resetFilters:"Reset filters",
       errNetDesc:"The data servers are busy or momentarily unavailable. Try again shortly.", retry:"Retry",
       ai:"AI", aiSummary:"Accessibility summary (AI)", aiGenerating:"Generating summary…", aiError:"AI unavailable (check the key or retry).",
       aiSettings:"AI settings", aiProvider:"Provider", aiKey:"API key", aiKeyPh:"Paste your key…", aiSave:"Save", aiClear:"Clear key",
@@ -793,7 +795,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
 
   /* ============ state ============ */
   var map, cluster, markerById={}, places=[], favSet={}, activeId=null, reqSeq=0;
-  var userLoc=null, sortMode="score", addMode=false, addLatLng=null, lastFocus=null;
+  var userLoc=null, sortMode="score", addMode=false, addLatLng=null, lastFocus=null, currentCity="Nantes";
   var filters={ levels:{yes:true,limited:true}, feats:{}, cats:{}, minScore:0 };
   var pendingShare=null;
 
@@ -970,13 +972,15 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   }
 
   /* ============ render results list ============ */
+  function gradeOf(a){ return a>=4?"A":(a>=3.2?"B":(a>=2.6?"C":(a>=2.1?"D":"E"))); }
   function updateStats(vis){
     var el=$("#statsbar");
-    if(!vis || !vis.length){ el.hidden=true; el.textContent=""; return; }
+    if(!vis || !vis.length){ el.hidden=true; el.innerHTML=""; return; }
     var sum=0; for(var i=0;i<vis.length;i++){ sum+=vis[i].score; }
-    var avg=(sum/vis.length).toFixed(1);
+    var avgN=sum/vis.length, avg=avgN.toFixed(1), g=gradeOf(avgN);
+    var col={A:"#16813A",B:"#5a9e1b",C:"#A85C00",D:"#c1440e",E:"#B3261E"}[g];
     el.hidden=false;
-    el.innerHTML=vis.length+" "+esc(t("statPlaces"))+' <span class="star">\u2605</span> '+esc(t("statAvg"))+" "+avg+"/5";
+    el.innerHTML='<span class="grade" style="background:'+col+'" title="'+esc(t("statGrade"))+' '+g+'">'+g+'</span>'+(currentCity?'<b>'+esc(currentCity)+'</b> \u00b7 ':'')+vis.length+" "+esc(t("statPlaces"))+' \u00b7 '+esc(t("statAvg"))+" "+avg+"/5";
   }
   function resetFilters(){
     filters={ levels:{yes:true,limited:true}, feats:{}, cats:{}, minScore:0 };
@@ -1156,6 +1160,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     xhrJSON("GET",url,null,function(err,data){
       if(err || !data || !data.length){ setStatus("—", t("noPlace"), false); return; }
       var r=data[0];
+      currentCity = r.name || (r.display_name?String(r.display_name).split(",")[0]:"");
       map.setView([Number(r.lat),Number(r.lon)], 15);
     });
   }
@@ -1166,6 +1171,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     setStatus("", t("searching"), true);
     navigator.geolocation.getCurrentPosition(function(pos){
       userLoc={lat:pos.coords.latitude, lon:pos.coords.longitude};
+      currentCity="";
       map.setView([userLoc.lat,userLoc.lon],16,{animate:true});
       L.circleMarker([userLoc.lat,userLoc.lon],{radius:9,color:"#FF5A38",weight:3,fillColor:"#FF5A38",fillOpacity:.35}).addTo(map);
       $("#sortDist").hidden=false;

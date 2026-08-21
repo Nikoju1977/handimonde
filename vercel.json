@@ -1,6 +1,10 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    { "source": "/places", "destination": "/api/osm" },
+    { "source": "/assist", "destination": "/api/ai" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -10,13 +14,7 @@
         { "key": "Permissions-Policy", "value": "geolocation=(self), clipboard-write=(self)" }
       ]
     },
-    {
-      "source": "/",
-      "headers": [ { "key": "Cache-Control", "value": "no-store, must-revalidate" } ]
-    },
-    {
-      "source": "/index.html",
-      "headers": [ { "key": "Cache-Control", "value": "no-store, must-revalidate" } ]
-    }
+    { "source": "/", "headers": [ { "key": "Cache-Control", "value": "no-store, must-revalidate" } ] },
+    { "source": "/index.html", "headers": [ { "key": "Cache-Control", "value": "no-store, must-revalidate" } ] }
   ]
 }

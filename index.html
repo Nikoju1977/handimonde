@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--
+  HandiMonde — carte des lieux accessibles, partout.
+  © 2026 Studio Niko Design — Niko (Nicolas Julienne). Tous droits réservés.
+  Signature : Studio Niko Design · Août 2026.
+  Données cartographiques : OpenStreetMap, sous licence ODbL.
+-->
+<meta name="author" content="Studio Niko Design — Niko (Nicolas Julienne)">
+<meta name="copyright" content="© 2026 Studio Niko Design">
+<meta name="designer" content="Studio Niko Design">
 <meta name="description" content="Trouvez partout dans le monde des lieux accessibles et handi-inclusifs : accès fauteuil, toilettes PMR, bandes podotactiles, boucle magnétique, braille. Données ouvertes OpenStreetMap.">
 <title>HandiMonde — Trouver les lieux accessibles, partout</title>
 
@@ -268,6 +277,7 @@ legend{
   color:var(--brand-strong); font-weight:700; display:flex; align-items:center; gap:8px;
 }
 .statsbar[hidden]{display:none}
+.credit{ padding:9px 14px; font-family:"JetBrains Mono",monospace; font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); text-align:center; border-top:2px solid var(--line); background:var(--panel); flex:0 0 auto; }
 .statsbar .star{color:var(--limited)}
 .statsbar .grade{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; padding:0 6px; border-radius:7px; color:#fff; font-family:"Lexend",sans-serif; font-weight:700; font-size:.9rem; flex:0 0 auto; }
 .statsbar b{ color:var(--ink); }
@@ -532,6 +542,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
 
       <div class="statsbar" id="statsbar" role="status" aria-live="polite" hidden></div>
       <div class="results" id="results" tabindex="-1"></div>
+      <div class="credit">© 2026 Studio Niko Design · HandiMonde</div>
     </aside>
 
     <div class="mapwrap">
@@ -936,6 +947,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   /* ============ map init ============ */
   function initMap(){
     map = L.map("map",{ zoomControl:true, worldCopyJump:true, preferCanvas:true, renderer:L.canvas({ padding:0.5 }) }).setView([47.2184,-1.5536],14); // Nantes (canvas = rendu robuste iOS/mobile)
+    try{ map.attributionControl.setPrefix('\u00a9 2026 Studio Niko Design'); }catch(e){}
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
       maxZoom:19, attribution:'&copy; OpenStreetMap'
     }).addTo(map);

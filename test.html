@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test HandiMonde</title></head>
+<body style="font:17px/1.5 system-ui,sans-serif;padding:18px;margin:0;background:#fff;color:#111">
+<h1 style="font-size:1.4rem">Test HandiMonde</h1>
+<p style="color:#555">Cette page appelle directement le serveur et affiche les lieux en texte. Aucune carte.</p>
+<div id="out" style="margin-top:16px;padding:14px;border:2px solid #ccc;border-radius:10px">Chargement…</div>
+<script>
+var out=document.getElementById('out');
+function show(h){ out.innerHTML=h; }
+try{
+  var x=new XMLHttpRequest();
+  x.open('POST','/api/osm',true);
+  x.setRequestHeader('Content-Type','application/json');
+  x.timeout=35000;
+  x.onreadystatechange=function(){
+    if(x.readyState!==4) return;
+    if(x.status>=200&&x.status<300){
+      try{
+        var d=JSON.parse(x.responseText);
+        var els=d.elements||[]; var names=[];
+        for(var i=0;i<els.length&&names.length<15;i++){
+          var tg=els[i].tags||{};
+          if(tg.name) names.push('• '+tg.name+' — '+(tg.wheelchair||'?'));
+        }
+        show('<b style="color:#0a7f2e;font-size:1.2rem">OK — '+els.length+' lieux reçus ✓</b><br><br>'+(names.join('<br>')||'(pas de noms)'));
+      }catch(e){ show('<b style="color:#c00">Réponse illisible : '+e+'</b>'); }
+    } else { show('<b style="color:#c00">Erreur HTTP '+x.status+'</b><br><br>'+String(x.responseText).slice(0,300)); }
+  };
+  x.ontimeout=function(){ show('<b style="color:#c00">Timeout — serveur trop lent.</b>'); };
+  x.onerror=function(){ show('<b style="color:#c00">Erreur réseau — /api/osm injoignable depuis ton appareil.</b>'); };
+  x.send(JSON.stringify({q:'[out:json][timeout:25];nwr["wheelchair"~"^(yes|limited)$"](47.20,-1.58,47.23,-1.54);out center tags 60;'}));
+}catch(e){ show('<b style="color:#c00">JS bloqué : '+e+'</b>'); }
+</script>
+</body></html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HandiMonde — Hors ligne</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+      background: #0A1620;
+      color: #EAF2F4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .offline-box {
+      text-align: center;
+      max-width: 500px;
+      background: #10222C;
+      border: 2px solid #274451;
+      border-radius: 16px;
+      padding: 40px 30px;
+    }
+    .offline-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-family: 'Lexend', system-ui, sans-serif;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: #3FB4C9;
+    }
+    p {
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #A9C0C7;
+      font-size: 1.05rem;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.28s;
+    }
+    .btn-retry {
+      background: #3FB4C9;
+      color: #0A1620;
+    }
+    .btn-retry:hover {
+      background: #7FD6E5;
+    }
+    .btn-home {
+      background: #10222C;
+      color: #3FB4C9;
+      border: 2px solid #3FB4C9;
+    }
+    .btn-home:hover {
+      background: #16303B;
+    }
+    .hint {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #274451;
+      font-size: 0.9rem;
+      color: #7FA9B3;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-box">
+    <div class="offline-icon">📡</div>
+    <h1>Connexion perdue</h1>
+    <p>HandiMonde fonctionne en mode hors ligne. Vous pouvez continuer à consulter les lieux accessibles précédemment chargés.</p>
+    <div class="actions">
+      <button class="btn-retry" onclick="location.reload()">Réessayer</button>
+      <button class="btn-home" onclick="location.href='/'">Accueil</button>
+    </div>
+    <div class="hint">
+      <strong>Conseil :</strong> Restaurez votre connexion internet pour charger de nouveaux lieux et contribuer à la carte.
+    </div>
+  </div>
+</body>
+</html>

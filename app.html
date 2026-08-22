@@ -1320,7 +1320,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   function geocode(q){
     q=sanitizeQuery(q); if(!q) return;
     setStatus("", t("searching"), true);
-    var url="https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language="+lang+"&q="+encodeURIComponent(q);
+    var url="/find?q="+encodeURIComponent(q)+"&lang="+lang;
     xhrJSON("GET",url,null,function(err,data){
       if(err || !data || !data.length){ setStatus("—", t("noPlace"), false); return; }
       var r=data[0];

@@ -284,6 +284,14 @@ legend{
 
 /* card directions + distance */
 .card__dist{font-family:"JetBrains Mono",monospace; font-weight:700; color:var(--brand-strong)}
+.axes{display:flex; gap:6px; margin-top:8px}
+.axis{display:inline-flex; align-items:center; justify-content:center; width:32px; height:28px; border-radius:8px; border:2px solid var(--line); background:var(--panel-2); color:var(--ink-soft)}
+.axis svg{width:17px;height:17px}
+.axis.a0{opacity:.45}
+.axis.a1{background:var(--limited-bg); color:var(--limited); border-color:var(--limited)}
+.axis.a2{background:var(--yes-bg); color:var(--yes); border-color:var(--yes)}
+#profChips .axi{font-family:"Lexend",sans-serif; font-weight:700; background:var(--brand); color:#fff; width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem}
+#profChips .chip[aria-pressed="true"] .axi{background:#fff; color:var(--brand)}
 .card__fav{display:flex; align-items:center; gap:8px}
 .golink{
   text-decoration:none; border:2px solid var(--line); background:var(--surface); color:var(--brand-strong);
@@ -487,6 +495,14 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
 
         <div class="filters">
           <fieldset>
+            <legend data-i18n="profileTitle">Mes besoins</legend>
+            <div class="chips" id="profChips">
+              <button type="button" class="chip" data-need="motor" aria-pressed="true"><span class="axi">M</span><span data-i18n="axMotor">Moteur</span></button>
+              <button type="button" class="chip" data-need="vision" aria-pressed="true"><span class="axi">V</span><span data-i18n="axVision">Vision</span></button>
+              <button type="button" class="chip" data-need="hearing" aria-pressed="true"><span class="axi">A</span><span data-i18n="axHearing">Audition</span></button>
+            </div>
+          </fieldset>
+          <fieldset>
             <legend data-i18n="accessLevel">Niveau d'accès</legend>
             <div class="chips" id="levelChips">
               <button type="button" class="chip" data-level="yes" aria-pressed="true"><span class="dot dot--yes"></span><span data-i18n="lvlYes">Accessible</span></button>
@@ -672,7 +688,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Tri", sortScore:"Score", sortDist:"Distance", goThere:"Y aller", score:"Score d'accès",
       chkToilets:"Toilettes PMR", chkTactile:"Bandes podotactiles", chkHearing:"Boucle magnétique", chkBraille:"Braille", close:"Fermer",
       minScore:"Score minimum", share:"Partager", copied:"Lien copié dans le presse-papier", sharePlace:"Partager ce lieu",
-      statPlaces:"lieux dans cette zone", statAvg:"score moyen", statGrade:"Note", filteredNone:"lieux ici, mais aucun ne correspond à tes filtres", resetFilters:"Réinitialiser les filtres",
+      statPlaces:"lieux dans cette zone", statAvg:"score moyen", statGrade:"Note", profileTitle:"Mes besoins", axMotor:"Moteur", axVision:"Vision", axHearing:"Audition", axNone:"non renseigné", axPartial:"partiel", axGood:"bon", filteredNone:"lieux ici, mais aucun ne correspond à tes filtres", resetFilters:"Réinitialiser les filtres",
       errNetDesc:"Les serveurs de données sont saturés ou momentanément indisponibles. Réessayez dans un instant.", retry:"Réessayer",
       ai:"IA", aiSummary:"Résumé accessibilité (IA)", aiGenerating:"Génération du résumé…", aiError:"IA indisponible (vérifiez la clé ou réessayez).",
       aiSettings:"Paramètres IA", aiProvider:"Fournisseur", aiKey:"Clé API", aiKeyPh:"Collez votre clé…", aiSave:"Enregistrer", aiClear:"Effacer la clé",
@@ -703,7 +719,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       sortBy:"Sort", sortScore:"Score", sortDist:"Distance", goThere:"Directions", score:"Access score",
       chkToilets:"Accessible WC", chkTactile:"Tactile paving", chkHearing:"Hearing loop", chkBraille:"Braille", close:"Close",
       minScore:"Minimum score", share:"Share", copied:"Link copied to clipboard", sharePlace:"Share this place",
-      statPlaces:"places in this area", statAvg:"average score", statGrade:"Grade", filteredNone:"places here, but none match your filters", resetFilters:"Reset filters",
+      statPlaces:"places in this area", statAvg:"average score", statGrade:"Grade", profileTitle:"My needs", axMotor:"Mobility", axVision:"Vision", axHearing:"Hearing", axNone:"not stated", axPartial:"partial", axGood:"good", filteredNone:"places here, but none match your filters", resetFilters:"Reset filters",
       errNetDesc:"The data servers are busy or momentarily unavailable. Try again shortly.", retry:"Retry",
       ai:"AI", aiSummary:"Accessibility summary (AI)", aiGenerating:"Generating summary…", aiError:"AI unavailable (check the key or retry).",
       aiSettings:"AI settings", aiProvider:"Provider", aiKey:"API key", aiKeyPh:"Paste your key…", aiSave:"Save", aiClear:"Clear key",
@@ -919,12 +935,16 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
     route:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.3 18.2A5 5 0 0 0 13 13a5 5 0 0 1 4.7-5.2"/></svg>',
     share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.3M8.3 13.2l7.4 4.5"/></svg>',
-    spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4L12 3Z"/></svg>'
+    spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4L12 3Z"/></svg>',
+    wheel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="1.6"/><path d="M10 6.5V13h6l2.5 6"/><path d="M16 16a5 5 0 1 1-6-4.5"/></svg>',
+    eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    ear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6 6 0 0 1 12 0c0 3-2.2 4-3.5 5.2S13 16 12.5 17.5A3 3 0 0 1 7 16.5"/><path d="M9.5 8.5a2.5 2.5 0 0 1 4.5 1.5"/></svg>'
   };
 
   /* ============ state ============ */
   var map, cluster, markerById={}, places=[], favSet={}, activeId=null, reqSeq=0;
   var userLoc=null, sortMode="score", addMode=false, addLatLng=null, lastFocus=null, currentCity="Nantes";
+  var profile={motor:true, vision:true, hearing:true};
   var filters={ levels:{yes:true,limited:true}, feats:{}, cats:{}, minScore:0 };
   var pendingShare=null;
 
@@ -935,6 +955,20 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     if(f.tactile||f.braille) s+=1;
     if(f.hearing) s+=1;
     return s;
+  }
+  function axesOf(tg,f){
+    var motor=(tg.wheelchair==="yes"||tg.wheelchair==="designated")?2:(tg.wheelchair==="limited"?1:0);
+    if(f.toilets && motor<1) motor=1;
+    var vision=(f.tactile?1:0)+(f.braille?1:0);
+    var hearing=f.hearing?2:0;
+    return {motor:motor, vision:vision, hearing:hearing};
+  }
+  function profScore(p){
+    var s=0,n=0;
+    if(profile.motor){ s+=p.axes.motor; n++; }
+    if(profile.vision){ s+=p.axes.vision; n++; }
+    if(profile.hearing){ s+=p.axes.hearing; n++; }
+    return n ? s/n : (p.score/2.5);
   }
   function haversine(aLat,aLon,bLat,bLon){
     var R=6371, rad=Math.PI/180;
@@ -1042,7 +1076,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       var cat=categoryOf(tg);
       places.push({
         id:id, osmType:e.type, osmId:e.id, lat:lat, lon:lon, level:lvl, cat:cat,
-        name:nameOf(tg,cat), sub:subtitleOf(tg,cat), feats:feats, score:scoreOf(lvl,feats),
+        name:nameOf(tg,cat), sub:subtitleOf(tg,cat), feats:feats, score:scoreOf(lvl,feats), axes:axesOf(tg,feats),
         desc:tg["wheelchair:description"]||tg["wheelchair:description:fr"]||""
       });
     }
@@ -1106,8 +1140,8 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   function updateStats(vis){
     var el=$("#statsbar");
     if(!vis || !vis.length){ el.hidden=true; el.innerHTML=""; return; }
-    var sum=0; for(var i=0;i<vis.length;i++){ sum+=vis[i].score; }
-    var avgN=sum/vis.length, avg=avgN.toFixed(1), g=gradeOf(avgN);
+    var sum=0, psum=0; for(var i=0;i<vis.length;i++){ sum+=vis[i].score; psum+=profScore(vis[i]); }
+    var avgN=sum/vis.length, avg=avgN.toFixed(1), profAvg=psum/vis.length, g=gradeOf(profAvg*2.5);
     var col={A:"#16813A",B:"#5a9e1b",C:"#A85C00",D:"#c1440e",E:"#B3261E"}[g];
     el.hidden=false;
     el.innerHTML='<span class="grade" style="background:'+col+'" title="'+esc(t("statGrade"))+' '+g+'">'+g+'</span>'+(currentCity?'<b>'+esc(currentCity)+'</b> \u00b7 ':'')+vis.length+" "+esc(t("statPlaces"))+' \u00b7 '+esc(t("statAvg"))+" "+avg+"/5";
@@ -1140,7 +1174,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     if(sortMode==="dist" && userLoc){
       vis.sort(function(a,b){ return haversine(userLoc.lat,userLoc.lon,a.lat,a.lon)-haversine(userLoc.lat,userLoc.lon,b.lat,b.lon); });
     }else{
-      vis.sort(function(a,b){ return (b.score-a.score) || (a.level===b.level?0:(a.level==="yes"?-1:1)); });
+      vis.sort(function(a,b){ return (profScore(b)-profScore(a)) || (b.score-a.score) || (a.level===b.level?0:(a.level==="yes"?-1:1)); });
     }
     var html="";
     for(var i=0;i<vis.length && i<150;i++){ html+=cardHTML(vis[i]); }
@@ -1169,7 +1203,7 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       '<span class="card__body">'+
         '<span class="card__name">'+esc(p.name)+'</span>'+
         '<span class="card__meta">'+esc(p.sub)+dist+'</span>'+
-        '<span class="badges">'+lvlBadge+badges+'</span>'+
+        '<span class="badges">'+lvlBadge+badges+'</span>'+'<span class="axes">'+'<span class="axis a'+p.axes.motor+'" title="'+esc(t("axMotor"))+'">'+ICON.wheel+'</span>'+'<span class="axis a'+p.axes.vision+'" title="'+esc(t("axVision"))+'">'+ICON.eye+'</span>'+'<span class="axis a'+p.axes.hearing+'" title="'+esc(t("axHearing"))+'">'+ICON.ear+'</span>'+'</span>'+
       '</span>'+
       '<span class="card__fav">'+
         '<a class="golink" href="'+dir+'" target="_blank" rel="noopener" aria-label="'+esc(t("goThere"))+' — '+esc(p.name)+'">'+ICON.route+'<span>'+esc(t("goThere"))+'</span></a>'+
@@ -1310,7 +1344,18 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
   }
 
   /* ============ chips / filters ============ */
+  function saveProfile(){ safeStorage.set("profile", profile); }
+  function applyProfileChips(){
+    $all("#profChips .chip").forEach(function(ch){ var nd=ch.getAttribute("data-need"); ch.setAttribute("aria-pressed", profile[nd]?"true":"false"); });
+  }
   function bindChips(){
+    $all("#profChips .chip").forEach(function(ch){
+      ch.addEventListener("click",function(){
+        var nd=ch.getAttribute("data-need"); var on=ch.getAttribute("aria-pressed")!=="true";
+        ch.setAttribute("aria-pressed",on?"true":"false"); profile[nd]=on;
+        saveProfile(); renderResults(); rebuildMarkers();
+      });
+    });
     $all("#levelChips .chip").forEach(function(ch){
       ch.addEventListener("click",function(){
         var lv=ch.getAttribute("data-level"); var on=ch.getAttribute("aria-pressed")!=="true";
@@ -1573,12 +1618,13 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
       map.setView([hp.lat,hp.lon],17,{animate:false});
       setTimeout(landingFallback,4500);
     }
-    Promise.all([safeStorage.get("theme"),safeStorage.get("fs"),safeStorage.get("lang"),safeStorage.get("favs"),safeStorage.get("ai")])
+    Promise.all([safeStorage.get("theme"),safeStorage.get("fs"),safeStorage.get("lang"),safeStorage.get("favs"),safeStorage.get("ai"),safeStorage.get("profile")])
     .then(function(v){
       if(v[0]) applyTheme(v[0]);
       if(typeof v[1]==="number"){ fsIdx=v[1]; applyFont(); }
       if(v[2]) applyLang(v[2]);
       if(v[3]) favSet=v[3];
+      if(v[5] && typeof v[5]==="object"){ profile.motor=v[5].motor!==false; profile.vision=v[5].vision!==false; profile.hearing=v[5].hearing!==false; applyProfileChips(); }
       if(v[4] && typeof v[4]==="object"){ aiCfg.provider=v[4].provider||"mistral"; aiCfg.key=v[4].key||""; }
     });
   }

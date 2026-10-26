@@ -1,0 +1,32 @@
+name: CI — static and API syntax
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check serverless JavaScript syntax
+        run: |
+          node --check api/ai.js
+          node --check api/geo.js
+          node --check api/osm.js
+      - name: Verify the public entry points
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in index.html app.html test.html; do
+            test -s "$file"
+            grep -Eiq '<!doctype[[:space:]]+html' "$file"
+            grep -Eiq '<title([[:space:]>])' "$file"
+          done
+          test -s vercel.json

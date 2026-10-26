@@ -1,5 +1,8 @@
 # HandiMonde — Carte des lieux accessibles
 
+> **Projet signature · 06/06 · CARTOGRAPHIE** — [Étude de projet : problème, choix techniques et limites](https://github.com/Nikoju1977/Nikoju1977/blob/main/SHOWCASE.md) · [Portfolio Studio Niko Design](https://github.com/Nikoju1977).
+
+
 **Catégorie : accessibilité & cartographie** · Studio Niko Design
 
 Application web de consultation de lieux et d'équipements accessibles, basée sur les informations disponibles dans **OpenStreetMap**. Son but est de faciliter la recherche d'informations pratiques sur l'accessibilité, notamment pour les personnes à mobilité réduite.

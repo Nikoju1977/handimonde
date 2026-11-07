@@ -28,7 +28,7 @@ async function readBody(req){
 }
 async function hit(url,q,attempts){
   try{
-    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),9000);
+    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),7000);
     const r=await fetch(url,{ method:"POST",
       headers:{ "Content-Type":"application/x-www-form-urlencoded","Accept":"application/json",
         "User-Agent":"HandiMonde/1.0 (accessibility map; github.com/Nikoju1977/handimonde)" },
@@ -43,14 +43,15 @@ async function hit(url,q,attempts){
 }
 async function queryMirrors(q){
   const attempts=[]; let emptyFallback=null;
-  for(let pass=0; pass<2; pass++){
-    for(const url of MIRRORS){
-      const ok=await hit(url,q,attempts);
+  // Bounded, parallel attempts: never exceed the function and browser timeout.
+  for(const group of [MIRRORS.slice(0,2), MIRRORS.slice(2)]){
+    const results=await Promise.all(group.map(url=>hit(url,q,attempts)));
+    for(const ok of results){
       if(!ok) continue;
       if(ok.data.elements.length>0) return { ok:true, mirror:ok.mirror, data:ok.data, attempts };
-      attempts.push(url+" -> empty(0)"); if(!emptyFallback) emptyFallback=ok;
+      if(!emptyFallback) emptyFallback=ok;
     }
-    if(pass===0) await sleep(1000);
+    if(emptyFallback) break; // Valid 0-element response must not become a fake result.
   }
   if(emptyFallback) return { ok:true, mirror:emptyFallback.mirror, data:emptyFallback.data, attempts, empty:true };
   return { ok:false, attempts };
@@ -65,7 +66,7 @@ function sendData(res,out){
 }
 
 export default async function handler(req,res){
-  res.setHeader("Access-Control-Allow-Origin","*");
+  // Same-origin browser clients; no public cross-origin read permission.
   res.setHeader("Access-Control-Allow-Methods","GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers","Content-Type");
   if(req.method==="OPTIONS"){ res.status(204).end(); return; }

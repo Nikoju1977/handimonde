@@ -1021,37 +1021,32 @@ input[type="range"]:focus-visible{outline:3px solid var(--focus); outline-offset
     fetchOverpass(q,seq);
   }
   function fetchOverpass(q,seq){
-    var x=new XMLHttpRequest();
-    x.open("GET","/places?q="+encodeURIComponent(q),true); x.timeout=35000;
+    var x=new XMLHttpRequest(), finished=false;
+    function failed(){
+      if(finished || seq!==reqSeq) return;
+      finished=true;
+      setStatus("—",t("errNet"),false);
+      renderError();
+    }
+    x.open("GET","/places?q="+encodeURIComponent(q),true);
+    x.timeout=18000;
     x.onreadystatechange=function(){
-      if(x.readyState!==4) return;
-      if(seq!==reqSeq) return;
+      if(x.readyState!==4 || finished || seq!==reqSeq) return;
       if(x.status>=200 && x.status<300){
         var d=null;
-        try{ d=JSON.parse(x.responseText); }catch(e){ d=null; }
-        if(d && d.elements){
+        try{d=JSON.parse(x.responseText);}catch(e){d=null;}
+        if(d && Array.isArray(d.elements)){
+          finished=true;
           try{ ingest(d.elements); renderResults(); rebuildMarkers(); }
-          catch(err){ setStatus("!", "Rendu: "+((err&&err.message)||err), false); }
+          catch(err){ setStatus("!", "Rendu: "+((err&&err.message)||err), false); renderError(); }
           return;
         }
       }
-      tryOverpass(0,q,seq,0);
+      failed();
     };
-    x.ontimeout=function(){ if(seq===reqSeq) tryOverpass(0,q,seq,0); };
-    x.onerror=function(){ if(seq===reqSeq) tryOverpass(0,q,seq,0); };
-    x.send();
-  }
-  function tryOverpass(i,q,seq,attempt){
-    if(i>=OVP.length){
-      if(attempt<1){ setTimeout(function(){ if(seq===reqSeq) tryOverpass(0,q,seq,attempt+1); }, 1600); return; }
-      if(seq===reqSeq){ setStatus("—", t("errNet"), false); renderError(); }
-      return;
-    }
-    xhrJSON("POST",OVP[i],"data="+encodeURIComponent(q),function(err,data){
-      if(seq!==reqSeq) return;
-      if(err || !data || !data.elements){ tryOverpass(i+1,q,seq,attempt); return; }
-      ingest(data.elements); renderResults(); rebuildMarkers();
-    });
+    x.ontimeout=failed;
+    x.onerror=failed;
+    try{x.send();}catch(e){failed();}
   }
   function renderError(){
     var res=$("#results");
